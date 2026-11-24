@@ -2,23 +2,41 @@
 """Prove the daemon's injection path: synthesize a modifier chord on a uinput
 virtual keyboard and read the events back off the kernel, so we can see the
 modifiers held down and released around the key. Run as root (uinput)."""
-import sys
-from evdev import ecodes, InputDevice, categorize
+import time
+from evdev import ecodes, InputDevice, categorize, list_devices
 
 from patchbay.daemon.executors import Injector
 
 CHORD = ["ctrl", "alt", "shift", "z"]
 
+
+def find_loopback(name, timeout=3.0):
+    end = time.time() + timeout
+    while time.time() < end:
+        for path in list_devices():
+            try:
+                d = InputDevice(path)
+            except OSError:
+                continue
+            if d.name == name:
+                return d
+        time.sleep(0.1)
+    return None
+
+
 def main():
     inj = Injector()
-    # the uinput device loops back as a real /dev/input node we can read
-    dev = InputDevice(inj.ui.devnode)
-    print(f"virtual keyboard: {inj.ui.devnode} ({dev.name})")
+    dev = find_loopback("patchbay")
+    if dev is None:
+        print("loopback device not found"); return 1
+    print(f"virtual keyboard: {dev.path} ({dev.name})")
 
+    dev.grab()  # so our own reader sees the events first
     inj.press_chord(CHORD)
-    inj.tap_media("play_pause")
-
+    time.sleep(0.05)
     events = list(dev.read())
+    dev.ungrab()
+
     print("\nkernel event stream for", "+".join(CHORD), ":")
     for e in events:
         if e.type == ecodes.EV_KEY:
@@ -32,6 +50,7 @@ def main():
     print(f"\n{len(downs)} key-downs, {len(ups)} key-ups "
           f"(balanced: {len(downs) == len(ups)})")
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
