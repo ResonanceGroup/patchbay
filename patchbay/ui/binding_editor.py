@@ -116,15 +116,42 @@ class GridComboBox(QComboBox):
     def showPopup(self):
         super().showPopup()
         v = self.view()
-        h = v.size().height()
+        c = v.parentWidget()  # the popup container (top-level)
+        cpal = c.palette()
+        cpal.setColor(QPalette.ColorRole.Window, QColor("#2d2d30"))
+        cpal.setColor(QPalette.ColorRole.Base, QColor("#2d2d30"))
+        c.setPalette(cpal)
+        # no dead space around the view inside the container: the popup
+        # container adds 4px spacer items above/below the view
+        orig = c.size()
+        c.setFrameShape(QFrame.Shape.NoFrame)
+        if c.layout() is not None:
+            c.layout().setContentsMargins(0, 0, 0, 0)
+            lay = c.layout()
+            i = 0
+            while i < lay.count():
+                if lay.itemAt(i).spacerItem() is not None:
+                    lay.removeItem(lay.itemAt(i))
+                else:
+                    i += 1
+        c.setFixedSize(orig.width(), orig.height() - 8)
+        # arrow flips while open
+        self.setProperty("open", True)
+        self.style().polish(self)
+        h = c.size().height()
         below = self.mapToGlobal(QPoint(0, self.height()))
         screen = self.screen().geometry()
         if below.y() + h > screen.bottom():
             # flip above the box, never covering it
-            v.setGeometry(QRect(below + QPoint(0, -self.height() - h),
-                                v.size()))
+            c.setGeometry(QRect(below + QPoint(0, -self.height() - h),
+                                c.size()))
         else:
-            v.setGeometry(QRect(below, v.size()))
+            c.setGeometry(QRect(below, c.size()))
+
+    def hidePopup(self):
+        super().hidePopup()
+        self.setProperty("open", False)
+        self.style().polish(self)
 
 
 class ValueStack(QStackedWidget):
@@ -228,6 +255,8 @@ QTreeWidget#propgrid QComboBox::drop-down { background: transparent;
     border: none; width: 18px; margin-right: 6px; }
 QTreeWidget#propgrid QComboBox::down-arrow { image: url(_ARROW_PNG_);
     width: 12px; height: 8px; }
+QTreeWidget#propgrid QComboBox[open="true"]::down-arrow {
+    image: url(_UP_ARROW_PNG_); }
 QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
 QTreeWidget#propgrid QComboBox QAbstractItemView { background: #2d2d30;
     border: 1px solid #3f3f46; selection-background-color: #3399ff; }
@@ -235,6 +264,8 @@ QTreeWidget#propgrid QComboBox QAbstractItemView { background: #2d2d30;
 # absolute path to the arrow asset (QSS url() is cwd-relative otherwise)
 GRID_QSS = GRID_QSS.replace(
     "_ARROW_PNG_", str(Path(__file__).parent / "assets" / "down_arrow.png"))
+GRID_QSS = GRID_QSS.replace(
+    "_UP_ARROW_PNG_", str(Path(__file__).parent / "assets" / "up_arrow.png"))
 
 
 class PropertyGrid(QTreeWidget):
