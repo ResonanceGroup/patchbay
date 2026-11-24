@@ -104,7 +104,7 @@ class ValueStack(QStackedWidget):
         super().__init__(parent)
         keys_page = QWidget()
         kl = QHBoxLayout(keys_page)
-        kl.setContentsMargins(0, 2, 0, 2)
+        kl.setContentsMargins(0, 0, 0, 0)
         kl.setSpacing(4)
         self.chords = QLabel("")
         self.chords.setStyleSheet(f"color: {DIM}; font-family: '{MONO}';")
@@ -138,13 +138,11 @@ class _GridDelegate(QStyledItemDelegate):
         is_cat = index.sibling(index.row(), 0).data(Qt.UserRole) == "cat"
         if is_cat:
             p.fillRect(opt.rect, QColor("#37373d"))
-        elif index.column() == 0:
-            p.fillRect(opt.rect, QColor("#2d2d30"))
         opt2 = QStyleOptionViewItem(opt)
         if is_cat and index.column() == 0:
             opt2.rect.adjust(22, 0, 0, 0)
         elif index.column() == 0:
-            opt2.rect.adjust(10, 0, 0, 0)
+            opt2.rect.adjust(8, 0, 0, 0)
         super().paint(p, opt2, index)
         r = opt.rect
         if index.column() != 0:
@@ -166,15 +164,15 @@ class _GridDelegate(QStyledItemDelegate):
 
 
 GRID_QSS = """
-QTreeWidget#propgrid { background: #252526; border: 1px solid #3f3f46;
+QTreeWidget#propgrid { background: #1e1e1e; border: 1px solid #3f3f46;
     outline: 0; font-size: 14px; }
 QTreeWidget#propgrid::item { border-bottom: 1px solid #333336; padding: 0; }
-QTreeWidget#propgrid QLineEdit { background: transparent; border: none;
-    padding: 4px 6px; min-height: 18px; }
-QTreeWidget#propgrid QComboBox { background: transparent; border: none;
-    padding: 3px 4px; min-height: 18px; }
+QTreeWidget#propgrid QLineEdit, QTreeWidget#propgrid QComboBox {
+    background: #1e1e1e; border: none; padding: 4px 6px; min-height: 18px; }
+QTreeWidget#propgrid QComboBox::drop-down { background: transparent;
+    border: none; width: 18px; }
 QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
-QTreeWidget#propgrid QComboBox QAbstractItemView { background: #252526;
+QTreeWidget#propgrid QComboBox QAbstractItemView { background: #1e1e1e;
     border: 1px solid #3f3f46; selection-background-color: #37373d; }
 """
 
@@ -189,7 +187,7 @@ class PropertyGrid(QTreeWidget):
         self.setHeaderHidden(True)
         self.setColumnCount(2)
         self.setRootIsDecorated(False)
-        self.setIndentation(18)
+        self.setIndentation(8)
         self.setSelectionMode(QAbstractItemView.NoSelection)
         self.setItemDelegate(_GridDelegate())
         self.header().setStretchLastSection(True)
@@ -292,7 +290,7 @@ class BindingEditor(QFrame):
             "QComboBox#objheader { background: #2d2d30; border: 1px solid "
             "#3f3f46; border-radius: 4px; font-size: 15px; padding: 5px 8px; }"
             "QComboBox#objheader::drop-down { border: none; width: 18px; }"
-            "QComboBox#objheader QAbstractItemView { background: #252526; "
+            "QComboBox#objheader QAbstractItemView { background: #1e1e1e; "
             "border: 1px solid #3f3f46; selection-background-color: #37373d; }")
         self.obj_combo.setEditable(False)
         for kid in KEY_IDS:
