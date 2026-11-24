@@ -137,14 +137,18 @@ class _GridDelegate(QStyledItemDelegate):
     def paint(self, p, opt, index):
         is_cat = index.sibling(index.row(), 0).data(Qt.UserRole) == "cat"
         r = opt.rect
-        if is_cat or index.column() == 0:
+        if is_cat:
             p.fillRect(r, QColor("#37373d"))
         else:
             p.fillRect(r, QColor("#252526"))
+            if index.column() == 0:
+                # narrow heading-colored gutter along the left edge
+                p.fillRect(QRect(r.left(), r.top(), 22, r.height()),
+                           QColor("#37373d"))
         text = index.data(Qt.DisplayRole) or ""
         p.setFont(opt.font)
         if index.column() == 0 and text:
-            off = 22 if is_cat else 6
+            off = 22 if is_cat else 28
             p.setPen(QColor("#e8e8e8") if is_cat else QColor("#d4d4d4"))
             p.drawText(r.adjusted(off, 0, -4, 0),
                        int(Qt.AlignVCenter | Qt.AlignLeft), text)
