@@ -42,7 +42,7 @@ physical key / encoder (onboard layer)
 
 Control layout and numbering used throughout Patchbay profiles:
 
-![Layout: encoders E1/E2, keys K01-K12, layer button](assets/keypad-layout.svg?v=2)
+![Layout: encoders E1/E2, keys K01-K12, layer button](assets/keypad-layout.svg?v=3)
 
 ## Project layout
 
