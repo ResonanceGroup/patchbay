@@ -36,6 +36,9 @@ QPushButton {{ background: {CARD}; border: 1px solid {BORDER}; border-radius: 4p
     padding: 7px 14px; color: {TEXT}; }}
 QPushButton:hover {{ background: {KEY_HOVER}; }}
 QStatusBar {{ background: {PANEL}; color: {DIM}; }}
+QSplitter::handle {{ background: {BG}; }}
+QSplitter::handle:vertical {{ height: 8px; }}
+QSplitter::handle:vertical:hover {{ background: {BORDER}; }}
 """
 
 

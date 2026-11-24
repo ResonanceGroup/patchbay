@@ -5,7 +5,7 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (QHBoxLayout, QLabel, QMainWindow,
-                               QPushButton, QVBoxLayout, QWidget)
+                               QPushButton, QSplitter, QVBoxLayout, QWidget)
 
 from ..core.profile import ProfileState, load_profiles
 from ..core.window_rules import active_window, best_profile
@@ -67,8 +67,15 @@ class MainWindow(QMainWindow):
         left_lay = QVBoxLayout(left_w)
         left_lay.setContentsMargins(0, 0, 0, 0)
         left_lay.setSpacing(12)
-        left_lay.addWidget(self.profile_panel)
-        left_lay.addWidget(self.editor, 1)
+        self.left_split = QSplitter(Qt.Orientation.Vertical)
+        self.left_split.addWidget(self.profile_panel)
+        self.left_split.addWidget(self.editor)
+        self.left_split.setStretchFactor(0, 0)
+        self.left_split.setStretchFactor(1, 1)
+        self.left_split.setCollapsible(0, False)
+        self.left_split.setCollapsible(1, False)
+        self.left_split.setSizes([220, 480])
+        left_lay.addWidget(self.left_split, 1)
         left_w.setFixedWidth(340)
         body.addWidget(left_w, 0)
 
