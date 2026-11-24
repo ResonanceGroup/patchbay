@@ -1,195 +1,66 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 680" font-family="Segoe UI, Helvetica, Arial, sans-serif">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#12161e"/>
-      <stop offset="1" stop-color="#1a212e"/>
-    </linearGradient>
-    <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#4a505a"/>
-      <stop offset="0.5" stop-color="#3c424c"/>
-      <stop offset="1" stop-color="#333842"/>
-    </linearGradient>
-    <linearGradient id="acrylic" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.22"/>
-      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.08"/>
-      <stop offset="1" stop-color="#ffffff" stop-opacity="0.16"/>
-    </linearGradient>
-    <linearGradient id="cap" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#33383f"/>
-      <stop offset="0.55" stop-color="#23272d"/>
-      <stop offset="1" stop-color="#15181c"/>
-    </linearGradient>
-    <linearGradient id="capTop" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#3c424a"/>
-      <stop offset="1" stop-color="#2a2f36"/>
-    </linearGradient>
-    <radialGradient id="knobBody" cx="0.38" cy="0.32" r="1">
-      <stop offset="0" stop-color="#6a7280"/>
-      <stop offset="0.55" stop-color="#3a404a"/>
-      <stop offset="1" stop-color="#1d2127"/>
-    </radialGradient>
-    <radialGradient id="knobTop" cx="0.4" cy="0.35" r="0.9">
-      <stop offset="0" stop-color="#565e6b"/>
-      <stop offset="1" stop-color="#262b33"/>
-    </radialGradient>
-    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.45"/>
-    </filter>
-    <filter id="capShadow" x="-40%" y="-40%" width="180%" height="180%">
-      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000000" flood-opacity="0.55"/>
-    </filter>
-  </defs>
-
-  <rect width="960" height="680" rx="20" fill="url(#bg)"/>
-  <text x="480" y="56" fill="#9db2cc" font-size="21" font-weight="600" text-anchor="middle">WCH CH57x macro pad — 12 keys · 2 clickable encoders · 3 layers</text>
-
-  <!-- acrylic case -->
-  <g filter="url(#soft)">
-    <rect x="150" y="96" width="660" height="540" rx="26" fill="url(#acrylic)" stroke="#8fa3bf" stroke-opacity="0.35" stroke-width="1.5"/>
-    <!-- inner plate -->
-    <rect x="168" y="114" width="624" height="504" rx="18" fill="url(#plate)"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 570" font-family="Segoe UI, Helvetica, Arial, sans-serif" fill="none" stroke="#1a1a1a" stroke-width="2">
+  <!-- case -->
+  <rect x="120" y="40" width="520" height="490" rx="18"/>
 
   <!-- corner screws -->
-  <g stroke="#1c2026" stroke-width="1.4">
-    <circle cx="186" cy="132" r="9" fill="#c9cdd4"/><line x1="180" y1="132" x2="192" y2="132"/><line x1="186" y1="126" x2="186" y2="138"/>
-    <circle cx="774" cy="132" r="9" fill="#c9cdd4"/><line x1="768" y1="132" x2="780" y2="132"/><line x1="774" y1="126" x2="774" y2="138"/>
-    <circle cx="186" cy="600" r="9" fill="#c9cdd4"/><line x1="180" y1="600" x2="192" y2="600"/><line x1="186" y1="594" x2="186" y2="606"/>
-    <circle cx="774" cy="600" r="9" fill="#c9cdd4"/><line x1="768" y1="600" x2="780" y2="600"/><line x1="774" y1="594" x2="774" y2="606"/>
+  <g stroke-width="1.5">
+    <circle cx="142" cy="62" r="6"/><line x1="138" y1="62" x2="146" y2="62"/><line x1="142" y1="58" x2="142" y2="66"/>
+    <circle cx="618" cy="62" r="6"/><line x1="614" y1="62" x2="622" y2="62"/><line x1="618" y1="58" x2="618" y2="66"/>
+    <circle cx="142" cy="508" r="6"/><line x1="138" y1="508" x2="146" y2="508"/><line x1="142" y1="504" x2="142" y2="512"/>
+    <circle cx="618" cy="508" r="6"/><line x1="614" y1="508" x2="622" y2="508"/><line x1="618" y1="504" x2="618" y2="512"/>
   </g>
-
-  <!-- USB port on left edge -->
-  <rect x="158" y="340" width="14" height="44" rx="3" fill="#1a1e24" stroke="#555e6b"/>
 
   <!-- encoders -->
-  <g filter="url(#capShadow)">
-    <!-- E1 -->
-    <g>
-      <circle cx="330" cy="215" r="66" fill="url(#knobBody)"/>
-      <g stroke="#20242a" stroke-width="2.4">
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(0 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(20 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(40 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(60 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(80 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(100 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(120 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(140 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(160 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(180 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(200 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(220 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(240 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(260 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(280 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(300 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(320 330 215)"/>
-        <line x1="330" y1="149" x2="330" y2="161" transform="rotate(340 330 215)"/>
-      </g>
-      <circle cx="330" cy="215" r="52" fill="none" stroke="#c8ccd4" stroke-width="2.5"/>
-      <circle cx="330" cy="215" r="48" fill="url(#knobTop)"/>
-      <line x1="330" y1="215" x2="330" y2="172" stroke="#e8ecf2" stroke-width="4" stroke-linecap="round"/>
-      <text x="330" y="303" fill="#aeb9c9" font-size="17" font-weight="600" text-anchor="middle">E1</text>
-    </g>
-    <!-- E2 -->
-    <g>
-      <circle cx="630" cy="215" r="66" fill="url(#knobBody)"/>
-      <g stroke="#20242a" stroke-width="2.4">
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(10 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(30 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(50 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(70 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(90 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(110 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(130 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(150 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(170 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(190 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(210 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(230 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(250 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(270 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(290 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(310 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(330 630 215)"/>
-        <line x1="630" y1="149" x2="630" y2="161" transform="rotate(350 630 215)"/>
-      </g>
-      <circle cx="630" cy="215" r="52" fill="none" stroke="#c8ccd4" stroke-width="2.5"/>
-      <circle cx="630" cy="215" r="48" fill="url(#knobTop)"/>
-      <line x1="630" y1="215" x2="596" y2="181" stroke="#e8ecf2" stroke-width="4" stroke-linecap="round"/>
-      <text x="630" y="303" fill="#aeb9c9" font-size="17" font-weight="600" text-anchor="middle">E2</text>
-    </g>
+  <g>
+    <circle cx="270" cy="150" r="52"/>
+    <circle cx="270" cy="150" r="40" stroke-width="1.5"/>
+    <line x1="270" y1="150" x2="270" y2="112" stroke-width="3"/>
+    <text x="270" y="232" fill="#1a1a1a" stroke="none" font-size="17" font-weight="600" text-anchor="middle">E1</text>
+
+    <circle cx="490" cy="150" r="52"/>
+    <circle cx="490" cy="150" r="40" stroke-width="1.5"/>
+    <line x1="490" y1="150" x2="462" y2="122" stroke-width="3"/>
+    <text x="490" y="232" fill="#1a1a1a" stroke="none" font-size="17" font-weight="600" text-anchor="middle">E2</text>
   </g>
 
-  <!-- key matrix: switch bases + keycaps, 3 cols x 4 rows -->
+  <!-- key matrix 3 x 4 -->
   <g>
-    <!-- switch bases (white kailh-style, peeking under caps) -->
-    <g fill="#d8d4c8" opacity="0.7">
-      <rect x="250" y="336" width="92" height="52" rx="6"/><rect x="394" y="336" width="92" height="52" rx="6"/><rect x="538" y="336" width="92" height="52" rx="6"/>
-      <rect x="250" y="412" width="92" height="52" rx="6"/><rect x="394" y="412" width="92" height="52" rx="6"/><rect x="538" y="412" width="92" height="52" rx="6"/>
-      <rect x="250" y="488" width="92" height="52" rx="6"/><rect x="394" y="488" width="92" height="52" rx="6"/><rect x="538" y="488" width="92" height="52" rx="6"/>
-      <rect x="250" y="564" width="92" height="52" rx="6"/><rect x="394" y="564" width="92" height="52" rx="6"/><rect x="538" y="564" width="92" height="52" rx="6"/>
-    </g>
-    <!-- keycaps -->
-    <g filter="url(#capShadow)">
-      <g>
-        <rect x="252" y="320" width="88" height="60" rx="9" fill="url(#cap)"/>
-        <rect x="258" y="324" width="76" height="44" rx="7" fill="url(#capTop)"/>
-        <rect x="396" y="320" width="88" height="60" rx="9" fill="url(#cap)"/>
-        <rect x="402" y="324" width="76" height="44" rx="7" fill="url(#capTop)"/>
-        <rect x="540" y="320" width="88" height="60" rx="9" fill="url(#cap)"/>
-        <rect x="546" y="324" width="76" height="44" rx="7" fill="url(#capTop)"/>
-      </g>
-      <g>
-        <rect x="252" y="396" width="88" height="60" rx="9" fill="url(#cap)"/>
-        <rect x="258" y="400" width="76" height="44" rx="7" fill="url(#capTop)"/>
-        <rect x="396" y="396" width="88" height="60" rx="9" fill="url(#cap)"/>
-        <rect x="402" y="400" width="76" height="44" rx="7" fill="url(#capTop)"/>
-        <rect x="540" y="396" width="88" height="60" rx="9" fill="url(#cap)"/>
-        <rect x="546" y="400" width="76" height="44" rx="7" fill="url(#capTop)"/>
-      </g>
-      <g>
-        <rect x="252" y="472" width="88" height="60" rx="9" fill="url(#cap)"/>
-        <rect x="258" y="476" width="76" height="44" rx="7" fill="url(#capTop)"/>
-        <rect x="396" y="472" width="88" height="60" rx="9" fill="url(#cap)"/>
-        <rect x="402" y="476" width="76" height="44" rx="7" fill="url(#capTop)"/>
-        <rect x="540" y="472" width="88" height="60" rx="9" fill="url(#cap)"/>
-        <rect x="546" y="476" width="76" height="44" rx="7" fill="url(#capTop)"/>
-      </g>
-      <g>
-        <rect x="252" y="548" width="88" height="60" rx="9" fill="url(#cap)"/>
-        <rect x="258" y="552" width="76" height="44" rx="7" fill="url(#capTop)"/>
-        <rect x="396" y="548" width="88" height="60" rx="9" fill="url(#cap)"/>
-        <rect x="402" y="552" width="76" height="44" rx="7" fill="url(#capTop)"/>
-        <rect x="540" y="548" width="88" height="60" rx="9" fill="url(#cap)"/>
-        <rect x="546" y="552" width="76" height="44" rx="7" fill="url(#capTop)"/>
-      </g>
-    </g>
-    <!-- labels -->
-    <g fill="#c4cedb" font-size="17" font-weight="600" text-anchor="middle">
-      <text x="296" y="353">K01</text><text x="440" y="353">K02</text><text x="584" y="353">K03</text>
-      <text x="296" y="429">K04</text><text x="440" y="429">K05</text><text x="584" y="429">K06</text>
-      <text x="296" y="505">K07</text><text x="440" y="505">K08</text><text x="584" y="505">K09</text>
-      <text x="296" y="581">K10</text><text x="440" y="581">K11</text><text x="584" y="581">K12</text>
-    </g>
+    <rect x="180" y="260" width="80" height="52" rx="7"/>
+    <rect x="300" y="260" width="80" height="52" rx="7"/>
+    <rect x="420" y="260" width="80" height="52" rx="7"/>
+
+    <rect x="180" y="326" width="80" height="52" rx="7"/>
+    <rect x="300" y="326" width="80" height="52" rx="7"/>
+    <rect x="420" y="326" width="80" height="52" rx="7"/>
+
+    <rect x="180" y="392" width="80" height="52" rx="7"/>
+    <rect x="300" y="392" width="80" height="52" rx="7"/>
+    <rect x="420" y="392" width="80" height="52" rx="7"/>
+
+    <rect x="180" y="458" width="80" height="52" rx="7"/>
+    <rect x="300" y="458" width="80" height="52" rx="7"/>
+    <rect x="420" y="458" width="80" height="52" rx="7"/>
+  </g>
+  <g fill="#1a1a1a" stroke="none" font-size="15" font-weight="600" text-anchor="middle">
+    <text x="220" y="291">K01</text><text x="340" y="291">K02</text><text x="460" y="291">K03</text>
+    <text x="220" y="357">K04</text><text x="340" y="357">K05</text><text x="460" y="357">K06</text>
+    <text x="220" y="423">K07</text><text x="340" y="423">K08</text><text x="460" y="423">K09</text>
+    <text x="220" y="489">K10</text><text x="340" y="489">K11</text><text x="460" y="489">K12</text>
   </g>
 
   <!-- side button + layer LEDs -->
-  <g>
-    <rect x="686" y="330" width="76" height="46" rx="8" fill="url(#cap)" filter="url(#capShadow)"/>
-    <rect x="691" y="334" width="66" height="34" rx="6" fill="url(#capTop)"/>
-    <text x="724" y="357" fill="#c4cedb" font-size="14" font-weight="600" text-anchor="middle">layer</text>
-    <circle cx="704" cy="412" r="7" fill="#5db2ff"/>
-    <circle cx="704" cy="412" r="11" fill="#5db2ff" opacity="0.25"/>
-    <circle cx="724" cy="412" r="7" fill="#2f6db3"/>
-    <circle cx="744" cy="412" r="7" fill="#2f6db3"/>
-    <text x="724" y="442" fill="#7286a3" font-size="13" text-anchor="middle">L1 / L2 / L3</text>
+  <rect x="540" y="266" width="64" height="40" rx="6"/>
+  <text x="572" y="291" fill="#1a1a1a" stroke="none" font-size="13" font-weight="600" text-anchor="middle">layer</text>
+  <g stroke-width="1.5">
+    <circle cx="552" cy="336" r="5"/>
+    <circle cx="572" cy="336" r="5"/>
+    <circle cx="592" cy="336" r="5"/>
   </g>
+  <text x="572" y="364" fill="#555" stroke="none" font-size="12" text-anchor="middle">L1 / L2 / L3</text>
 
   <!-- annotations -->
-  <g fill="#8fa3bf" font-size="15">
-    <text x="862" y="360" text-anchor="middle" transform="rotate(90 862 360)">side button cycles layers</text>
-    <text x="96" y="360" text-anchor="middle" transform="rotate(-90 96 360)">3 columns × 4 rows</text>
-    <text x="165" y="326" fill="#7286a3" font-size="13" text-anchor="middle" transform="rotate(-90 165 326)">USB</text>
+  <g fill="#555" stroke="none" font-size="13">
+    <text x="668" y="290" text-anchor="middle" transform="rotate(90 668 290)">side button cycles layers</text>
+    <text x="84" y="290" text-anchor="middle" transform="rotate(-90 84 290)">3 columns × 4 rows</text>
   </g>
 </svg>
