@@ -1,0 +1,20 @@
+{
+  "app": "FEMM",
+  "match": {"wm_class": ["femm"]},
+  "accent": "#a142f4",
+  "layers": [
+    {
+      "name": "Model",
+      "keys": {
+        "K01": {"label": "Solve", "action": {"type": "keys", "keys": ["f9"]}},
+        "K02": {"label": "Save", "action": {"type": "keys", "keys": ["ctrl", "s"]}},
+        "K06": {"label": "Undo", "action": {"type": "keys", "keys": ["ctrl", "z"]}}
+      },
+      "encoders": {
+        "E1": {"label": "Zoom", "cw": {"type": "keys", "keys": ["+"]}, "ccw": {"type": "keys", "keys": ["-"]}}
+      }
+    },
+    {"name": "L2"},
+    {"name": "L3"}
+  ]
+}

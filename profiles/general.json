@@ -1,0 +1,25 @@
+{
+  "app": "General",
+  "accent": "#4a8fd4",
+  "layers": [
+    {
+      "name": "Media",
+      "keys": {
+        "K01": {"label": "Play/Pause", "action": {"type": "media", "key": "play_pause"}},
+        "K02": {"label": "Next", "action": {"type": "media", "key": "next"}},
+        "K03": {"label": "Prev", "action": {"type": "media", "key": "prev"}},
+        "K04": {"label": "Mute", "action": {"type": "media", "key": "mute"}},
+        "K05": {"label": "Copy", "action": {"type": "keys", "keys": ["ctrl", "c"]}},
+        "K06": {"label": "Paste", "action": {"type": "keys", "keys": ["ctrl", "v"]}},
+        "K07": {"label": "Undo", "action": {"type": "keys", "keys": ["ctrl", "z"]}},
+        "K08": {"label": "Find", "action": {"type": "keys", "keys": ["ctrl", "f"]}}
+      },
+      "encoders": {
+        "E1": {"label": "Volume", "cw": {"type": "media", "key": "vol_up"}, "ccw": {"type": "media", "key": "vol_down"}, "press": {"type": "media", "key": "mute"}},
+        "E2": {"label": "Scroll", "cw": {"type": "keys", "keys": ["pagedown"]}, "ccw": {"type": "keys", "keys": ["pageup"]}}
+      }
+    },
+    {"name": "L2"},
+    {"name": "L3"}
+  ]
+}

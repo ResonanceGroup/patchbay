@@ -1,0 +1,24 @@
+{
+  "app": "LTspice",
+  "match": {"wm_class": ["ltspice", "ltspiceiv"]},
+  "accent": "#e8710a",
+  "layers": [
+    {
+      "name": "Schematic",
+      "keys": {
+        "K01": {"label": "Run", "action": {"type": "keys", "keys": ["ctrl", "r"]}},
+        "K02": {"label": "Stop", "action": {"type": "keys", "keys": ["ctrl", "break"]}},
+        "K03": {"label": "Component", "action": {"type": "keys", "keys": ["f2"]}},
+        "K04": {"label": "Wire", "action": {"type": "keys", "keys": ["f3"]}},
+        "K05": {"label": "Flag", "action": {"type": "keys", "keys": ["f4"]}},
+        "K06": {"label": "Undo", "action": {"type": "keys", "keys": ["ctrl", "z"]}},
+        "K09": {"label": "Save", "action": {"type": "keys", "keys": ["ctrl", "s"]}}
+      },
+      "encoders": {
+        "E1": {"label": "Zoom", "cw": {"type": "keys", "keys": ["+"]}, "ccw": {"type": "keys", "keys": ["-"]}}
+      }
+    },
+    {"name": "L2"},
+    {"name": "L3"}
+  ]
+}

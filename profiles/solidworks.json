@@ -1,0 +1,23 @@
+{
+  "app": "SolidWorks",
+  "match": {"wm_class": ["solidworks"]},
+  "accent": "#d93025",
+  "layers": [
+    {
+      "name": "Sketch",
+      "keys": {
+        "K01": {"label": "Rebuild", "action": {"type": "keys", "keys": ["ctrl", "b"]}},
+        "K02": {"label": "Undo", "action": {"type": "keys", "keys": ["ctrl", "z"]}},
+        "K03": {"label": "Line", "action": {"type": "keys", "keys": ["l"]}},
+        "K04": {"label": "Circle", "action": {"type": "keys", "keys": ["c"]}},
+        "K05": {"label": "Smart Dim", "action": {"type": "keys", "keys": ["s"]}},
+        "K06": {"label": "Trim", "action": {"type": "keys", "keys": ["t"]}}
+      },
+      "encoders": {
+        "E1": {"label": "Zoom", "cw": {"type": "keys", "keys": ["z"]}, "ccw": {"type": "keys", "keys": ["shift", "z"]}}
+      }
+    },
+    {"name": "L2"},
+    {"name": "L3"}
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "app": "KiCad",
+  "match": {"wm_class": ["kicad", "eeschema", "pcbnew"]},
+  "accent": "#34a853",
+  "layers": [
+    {
+      "name": "Schematic",
+      "keys": {
+        "K01": {"label": "Undo", "action": {"type": "keys", "keys": ["ctrl", "z"]}},
+        "K02": {"label": "Redo", "action": {"type": "keys", "keys": ["ctrl", "y"]}},
+        "K03": {"label": "Wire", "action": {"type": "keys", "keys": ["w"]}},
+        "K04": {"label": "Symbol", "action": {"type": "keys", "keys": ["a"]}},
+        "K05": {"label": "Move", "action": {"type": "keys", "keys": ["m"]}},
+        "K06": {"label": "Rotate", "action": {"type": "keys", "keys": ["r"]}},
+        "K07": {"label": "Delete", "action": {"type": "keys", "keys": ["delete"]}},
+        "K08": {"label": "Copy", "action": {"type": "keys", "keys": ["c"]}},
+        "K09": {"label": "Save", "action": {"type": "keys", "keys": ["ctrl", "s"]}},
+        "K10": {"label": "Zoom fit", "action": {"type": "keys", "keys": ["home"]}},
+        "K11": {"label": "Zoom in", "action": {"type": "keys", "keys": ["+"]}},
+        "K12": {"label": "Zoom out", "action": {"type": "keys", "keys": ["-"]}}
+      },
+      "encoders": {
+        "E1": {"label": "Zoom", "cw": {"type": "keys", "keys": ["+"]}, "ccw": {"type": "keys", "keys": ["-"]}, "press": {"type": "keys", "keys": ["home"]}},
+        "E2": {"label": "Pan", "cw": {"type": "keys", "keys": ["right"]}, "ccw": {"type": "keys", "keys": ["left"]}}
+      }
+    },
+    {
+      "name": "PCB",
+      "keys": {
+        "K01": {"label": "Undo", "action": {"type": "keys", "keys": ["ctrl", "z"]}},
+        "K02": {"label": "Redo", "action": {"type": "keys", "keys": ["ctrl", "y"]}},
+        "K03": {"label": "Track", "action": {"type": "keys", "keys": ["x"]}},
+        "K04": {"label": "Via", "action": {"type": "keys", "keys": ["v"]}},
+        "K05": {"label": "Move", "action": {"type": "keys", "keys": ["m"]}},
+        "K06": {"label": "Rotate", "action": {"type": "keys", "keys": ["r"]}},
+        "K07": {"label": "Delete", "action": {"type": "keys", "keys": ["delete"]}},
+        "K08": {"label": "DRC", "action": {"type": "keys", "keys": ["ctrl", "shift", "d"]}},
+        "K09": {"label": "Save", "action": {"type": "keys", "keys": ["ctrl", "s"]}},
+        "K10": {"label": "Zoom fit", "action": {"type": "keys", "keys": ["home"]}},
+        "K11": {"label": "Zoom in", "action": {"type": "keys", "keys": ["+"]}},
+        "K12": {"label": "Zoom out", "action": {"type": "keys", "keys": ["-"]}}
+      },
+      "encoders": {
+        "E1": {"label": "Zoom", "cw": {"type": "keys", "keys": ["+"]}, "ccw": {"type": "keys", "keys": ["-"]}, "press": {"type": "keys", "keys": ["home"]}},
+        "E2": {"label": "Grid", "cw": {"type": "keys", "keys": ["ctrl", "shift", "+"]}, "ccw": {"type": "keys", "keys": ["ctrl", "shift", "-"]}}
+      }
+    },
+    {"name": "L3"}
+  ]
+}
