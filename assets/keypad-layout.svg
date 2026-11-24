@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 640" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b3240"/>
+      <stop offset="1" stop-color="#222834"/>
+    </linearGradient>
+    <linearGradient id="key" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a4354"/>
+      <stop offset="1" stop-color="#2f3746"/>
+    </linearGradient>
+    <radialGradient id="knob" cx="0.4" cy="0.35" r="0.9">
+      <stop offset="0" stop-color="#4a5568"/>
+      <stop offset="1" stop-color="#333c4c"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="920" height="640" rx="18" fill="#161b23"/>
+  <text x="40" y="52" fill="#8fa3bf" font-size="22" font-weight="600">WCH CH57x macro pad — 12 keys · 2 clickable encoders · 3 layers</text>
+
+  <!-- device panel -->
+  <rect x="120" y="90" width="640" height="500" rx="24" fill="url(#panel)" stroke="#39435a" stroke-width="2"/>
+
+  <!-- encoders -->
+  <g>
+    <circle cx="290" cy="190" r="62" fill="url(#knob)" stroke="#55627a" stroke-width="2"/>
+    <line x1="290" y1="190" x2="290" y2="136" stroke="#7fb3ff" stroke-width="5" stroke-linecap="round"/>
+    <text x="290" y="198" fill="#c9d6ea" font-size="20" font-weight="600" text-anchor="middle">E1</text>
+    <text x="290" y="286" fill="#7286a3" font-size="15" text-anchor="middle">encoder · turn / press</text>
+
+    <circle cx="590" cy="190" r="62" fill="url(#knob)" stroke="#55627a" stroke-width="2"/>
+    <line x1="590" y1="190" x2="545" y2="150" stroke="#7fb3ff" stroke-width="5" stroke-linecap="round"/>
+    <text x="590" y="198" fill="#c9d6ea" font-size="20" font-weight="600" text-anchor="middle">E2</text>
+    <text x="590" y="286" fill="#7286a3" font-size="15" text-anchor="middle">encoder · turn / press</text>
+  </g>
+
+  <!-- key matrix: 3 columns x 4 rows, K01 upper-left .. K12 lower-right -->
+  <g font-size="22" font-weight="600" text-anchor="middle">
+    <!-- row 1 -->
+    <g>
+      <rect x="180" y="320" width="120" height="56" rx="10" fill="url(#key)" stroke="#4a5670" stroke-width="1.5"/>
+      <text x="240" y="355" fill="#dce6f5">K01</text>
+      <rect x="320" y="320" width="120" height="56" rx="10" fill="url(#key)" stroke="#4a5670" stroke-width="1.5"/>
+      <text x="380" y="355" fill="#dce6f5">K02</text>
+      <rect x="460" y="320" width="120" height="56" rx="10" fill="url(#key)" stroke="#4a5670" stroke-width="1.5"/>
+      <text x="520" y="355" fill="#dce6f5">K03</text>
+    </g>
+    <!-- row 2 -->
+    <g>
+      <rect x="180" y="392" width="120" height="56" rx="10" fill="url(#key)" stroke="#4a5670" stroke-width="1.5"/>
+      <text x="240" y="427" fill="#dce6f5">K04</text>
+      <rect x="320" y="392" width="120" height="56" rx="10" fill="url(#key)" stroke="#4a5670" stroke-width="1.5"/>
+      <text x="380" y="427" fill="#dce6f5">K05</text>
+      <rect x="460" y="392" width="120" height="56" rx="10" fill="url(#key)" stroke="#4a5670" stroke-width="1.5"/>
+      <text x="520" y="427" fill="#dce6f5">K06</text>
+    </g>
+    <!-- row 3 -->
+    <g>
+      <rect x="180" y="464" width="120" height="56" rx="10" fill="url(#key)" stroke="#4a5670" stroke-width="1.5"/>
+      <text x="240" y="499" fill="#dce6f5">K07</text>
+      <rect x="320" y="464" width="120" height="56" rx="10" fill="url(#key)" stroke="#4a5670" stroke-width="1.5"/>
+      <text x="380" y="499" fill="#dce6f5">K08</text>
+      <rect x="460" y="464" width="120" height="56" rx="10" fill="url(#key)" stroke="#4a5670" stroke-width="1.5"/>
+      <text x="520" y="499" fill="#dce6f5">K09</text>
+    </g>
+    <!-- row 4 -->
+    <g>
+      <rect x="180" y="536" width="120" height="56" rx="10" fill="url(#key)" stroke="#4a5670" stroke-width="1.5"/>
+      <text x="240" y="571" fill="#dce6f5">K10</text>
+      <rect x="320" y="536" width="120" height="56" rx="10" fill="url(#key)" stroke="#4a5670" stroke-width="1.5"/>
+      <text x="380" y="571" fill="#dce6f5">K11</text>
+      <rect x="460" y="536" width="120" height="56" rx="10" fill="url(#key)" stroke="#4a5670" stroke-width="1.5"/>
+      <text x="520" y="571" fill="#dce6f5">K12</text>
+    </g>
+  </g>
+
+  <!-- side button + layer LEDs -->
+  <g>
+    <rect x="640" y="330" width="70" height="40" rx="8" fill="url(#key)" stroke="#4a5670" stroke-width="1.5"/>
+    <text x="675" y="356" fill="#c9d6ea" font-size="14" font-weight="600" text-anchor="middle">layer</text>
+    <circle cx="655" cy="410" r="7" fill="#4da3ff"/>
+    <circle cx="675" cy="410" r="7" fill="#2f6db3"/>
+    <circle cx="695" cy="410" r="7" fill="#2f6db3"/>
+    <text x="675" y="440" fill="#7286a3" font-size="13" text-anchor="middle">L1 / L2 / L3</text>
+  </g>
+
+  <!-- side annotations -->
+  <g fill="#8fa3bf" font-size="15">
+    <text x="800" y="356" text-anchor="middle" transform="rotate(90 800 356)">side button cycles layers</text>
+    <text x="60" y="356" text-anchor="middle" transform="rotate(-90 60 356)">3 columns × 4 rows</text>
+  </g>
+</svg>
