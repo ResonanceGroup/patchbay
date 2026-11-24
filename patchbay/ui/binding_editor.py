@@ -9,7 +9,7 @@ Anatomy (System.Windows.Forms.PropertyGrid):
 """
 from __future__ import annotations
 
-from PySide6.QtCore import Qt, QRect, Signal
+from PySide6.QtCore import QPoint, Qt, QRect, Signal
 from PySide6.QtGui import QColor, QFont, QPen
 from PySide6.QtWidgets import (QComboBox, QFrame, QHBoxLayout, QHeaderView,
                                QLabel, QLineEdit, QPushButton, QStackedWidget,
@@ -113,9 +113,11 @@ class ValueStack(QStackedWidget):
         kl.addWidget(self.recorder)
         self.addWidget(keys_page)
         self.text_edit = QLineEdit()
+        self.text_edit.setMinimumHeight(26)
         self.text_edit.setPlaceholderText("text to type")
         self.addWidget(self.text_edit)
         self.media_combo = QComboBox()
+        self.media_combo.setMinimumHeight(26)
         for k in MediaAction.MEDIA_KEYS:
             self.media_combo.addItem(k.replace("_", " "), k)
         self.addWidget(self.media_combo)
@@ -129,37 +131,46 @@ class ValueStack(QStackedWidget):
 
 
 class _GridDelegate(QStyledItemDelegate):
-    """Draws the vertical column divider and the +/- category boxes."""
+    """Draws the vertical column divider and KiCad-style chevron toggles."""
 
     def paint(self, p, opt, index):
         is_cat = index.column() == 0 and index.data(Qt.UserRole) == "cat"
         if is_cat:
             from PySide6.QtWidgets import QStyleOptionViewItem
             opt2 = QStyleOptionViewItem(opt)
-            opt2.rect.adjust(18, 0, 0, 0)
+            opt2.rect.adjust(22, 0, 0, 0)
             super().paint(p, opt2, index)
         else:
             super().paint(p, opt, index)
         r = opt.rect
         if index.column() != 0:
             return
-        p.setPen(QPen(QColor(LINE)))
+        p.setPen(QPen(QColor("#333336")))
         p.drawLine(r.topRight(), r.bottomRight())
         if is_cat:
-            box = QRect(r.left() + 4, r.center().y() - 5, 10, 10)
-            p.setBrush(QColor("#1e1e1e"))
-            p.drawRect(box)
-            c = box.center()
-            p.drawLine(c.x() - 3, c.y(), c.x() + 3, c.y())
-            if not index.data(Qt.UserRole + 1):  # collapsed
-                p.drawLine(c.x(), c.y() - 3, c.x(), c.y() + 3)
+            cx, cy = r.left() + 10, r.center().y()
+            pen = QPen(QColor("#c8c8c8"))
+            pen.setWidthF(1.6)
+            pen.setCapStyle(Qt.RoundCap)
+            p.setPen(pen)
+            if index.data(Qt.UserRole + 1):  # expanded: down chevron
+                p.drawPolyline([QPoint(cx - 4, cy - 2), QPoint(cx, cy + 2),
+                                QPoint(cx + 4, cy - 2)])
+            else:  # collapsed: right chevron
+                p.drawPolyline([QPoint(cx - 2, cy - 4), QPoint(cx + 2, cy),
+                                QPoint(cx - 2, cy + 4)])
 
 
 GRID_QSS = """
-QTreeWidget#propgrid { background: #1e1e1e; border: 1px solid #3f3f46;
-    outline: 0; }
-QTreeWidget#propgrid::item { border-bottom: 1px solid #333336; padding: 3px 2px; }
+QTreeWidget#propgrid { background: #26262a; border: 1px solid #333336;
+    outline: 0; font-size: 14px; }
+QTreeWidget#propgrid::item { border-bottom: 1px solid #333336; padding: 8px 4px; }
 QTreeWidget#propgrid::item:selected { background: transparent; color: inherit; }
+QComboBox#objheader { background: transparent; border: none; font-size: 15px;
+    padding: 4px 2px; }
+QComboBox#objheader::drop-down { border: none; width: 18px; }
+QTreeWidget#propgrid QLineEdit { padding: 4px 6px; min-height: 18px; }
+QTreeWidget#propgrid QComboBox { padding: 3px 4px; min-height: 18px; }
 """
 
 
@@ -194,8 +205,6 @@ class PropertyGrid(QTreeWidget):
         f.setBold(True)
         it.setFont(0, f)
         it.setData(0, Qt.UserRole, "cat")
-        it.setBackground(0, QColor(CAT_BG))
-        it.setBackground(1, QColor(CAT_BG))
         self.addTopLevelItem(it)
         it.setExpanded(True)
         self._sync_cat_state(it)
@@ -236,6 +245,11 @@ class BindingEditor(QFrame):
         lay.setContentsMargins(10, 8, 10, 8)
         lay.setSpacing(6)
 
+        # panel title strip (KiCad-style)
+        ptitle = QLabel("Properties")
+        ptitle.setStyleSheet(f"color: {DIM}; font-size: 12px;")
+        lay.addWidget(ptitle)
+
         # toolbar strip
         tb = QHBoxLayout()
         tb.setSpacing(4)
@@ -254,6 +268,7 @@ class BindingEditor(QFrame):
 
         # object header combo
         self.obj_combo = QComboBox()
+        self.obj_combo.setObjectName("objheader")
         self.obj_combo.setEditable(False)
         for kid in KEY_IDS:
             self.obj_combo.addItem(kid, ("key", kid))
@@ -313,6 +328,7 @@ class BindingEditor(QFrame):
     # ---- action editor wiring ----
     def _add_action(self, cat, action, setv):
         combo = QComboBox()
+        combo.setMinimumHeight(26)
         for _, tname in TYPE_NAMES:
             combo.addItem(tname)
         stack = ValueStack()
@@ -369,6 +385,7 @@ class BindingEditor(QFrame):
 
         def gen_label(cat):
             self.label_edit = QLineEdit(b.label)
+            self.label_edit.setMinimumHeight(26)
             self.label_edit.setPlaceholderText("shown on the key")
             self.label_edit.textEdited.connect(
                 lambda _: self.binding_changed.emit())
