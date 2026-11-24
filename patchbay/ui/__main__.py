@@ -30,7 +30,8 @@ def main():
     if args.profile:
         for i, pr in enumerate(w.profiles):
             if pr.app == args.profile:
-                w.profile_combo.setCurrentIndex(i)
+                w._profile_changed(i)
+                w.profile_panel.refresh()
     w._layer_changed(args.layer)
     w.show()
     if args.screenshot:

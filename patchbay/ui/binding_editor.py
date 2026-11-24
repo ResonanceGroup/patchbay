@@ -1,22 +1,34 @@
-"""Left panel: a Properties-window style grid (property grid) for the
-selected control — categories with expand arrows, name | editor rows,
-horizontal grid lines, editors embedded in the value column."""
+"""Left panel: a replica of the classic WinForms PropertyGrid control.
+
+Anatomy (System.Windows.Forms.PropertyGrid):
+  - toolbar strip (sort: categorized / alphabetical)
+  - object header combo showing the selected object
+  - two-column grid: property name | value editor, vertical divider,
+    horizontal row lines, categories with +/- boxes and bold labels
+  - help/description panel at the bottom for the selected property
+"""
 from __future__ import annotations
 
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont
+from PySide6.QtCore import Qt, QRect, Signal
+from PySide6.QtGui import QColor, QFont, QPen
 from PySide6.QtWidgets import (QComboBox, QFrame, QHBoxLayout, QHeaderView,
                                QLabel, QLineEdit, QPushButton, QStackedWidget,
-                               QTreeWidget, QTreeWidgetItem, QVBoxLayout,
-                               QWidget)
+                               QStyledItemDelegate, QToolButton, QTreeWidget,
+                               QTreeWidgetItem, QVBoxLayout, QWidget)
 
 from ..core.actions import KeysAction, MediaAction, NoneAction, TextAction
+from ..core.profile import ENCODER_IDS, KEY_IDS
 from .theme import DIM, FAINT, MONO
 
 TYPE_NAMES = [("keys", "Keys"), ("text", "Text"), ("media", "Media"),
               ("macro", "Macro"), ("none", "None")]
 VALUE_NAME = {"keys": "Keys", "text": "Text", "media": "Media",
               "macro": "Macro", "none": "Value"}
+VALUE_DESC = {"keys": "Chord to send on press",
+              "text": "Text typed on press",
+              "media": "Media key sent on press",
+              "macro": "Sequence of actions",
+              "none": "No action"}
 
 _SPECIAL = {
     Qt.Key_Home: "home", Qt.Key_End: "end", Qt.Key_Delete: "delete",
@@ -30,6 +42,9 @@ _SPECIAL = {
 }
 for i in range(1, 13):
     _SPECIAL[getattr(Qt, f"Key_F{i}")] = f"f{i}"
+
+LINE = "#3f3f46"
+CAT_BG = "#2d2d30"
 
 
 def _qt_to_name(key: int) -> str | None:
@@ -80,47 +95,6 @@ class ChordRecorder(QPushButton):
         self.captured.emit(chord)
 
 
-GRID_QSS = """
-QTreeWidget#propgrid { background: transparent; border: none; outline: 0; }
-QTreeWidget#propgrid::item { border-bottom: 1px solid #333336; padding: 4px 2px; }
-QTreeWidget#propgrid::item:selected { background: transparent; color: inherit; }
-QTreeWidget#propgrid::branch { background: transparent; }
-"""
-
-
-class PropertyGrid(QTreeWidget):
-    """Two-column property grid: category rows + name|editor property rows."""
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setObjectName("propgrid")
-        self.setStyleSheet(GRID_QSS)
-        self.setHeaderHidden(True)
-        self.setColumnCount(2)
-        self.setRootIsDecorated(True)
-        self.setIndentation(14)
-        h = self.header()
-        h.setSectionResizeMode(QHeaderView.Interactive)
-        h.setStretchLastSection(True)
-        self.setColumnWidth(0, 118)
-
-    def add_category(self, text: str) -> QTreeWidgetItem:
-        it = QTreeWidgetItem([text])
-        f = QFont(self.font())
-        f.setBold(True)
-        it.setFont(0, f)
-        self.addTopLevelItem(it)
-        it.setExpanded(True)
-        return it
-
-    def add_property(self, cat: QTreeWidgetItem, name: str,
-                     widget: QWidget) -> QTreeWidgetItem:
-        it = QTreeWidgetItem([name])
-        cat.addChild(it)
-        self.setItemWidget(it, 1, widget)
-        return it
-
-
 class ValueStack(QStackedWidget):
     """Editor for an action's value; pages match TYPE_NAMES order."""
     chord_captured = Signal(list)
@@ -154,9 +128,99 @@ class ValueStack(QStackedWidget):
         self.recorder.captured.connect(self.chord_captured)
 
 
+class _GridDelegate(QStyledItemDelegate):
+    """Draws the vertical column divider and the +/- category boxes."""
+
+    def paint(self, p, opt, index):
+        is_cat = index.column() == 0 and index.data(Qt.UserRole) == "cat"
+        if is_cat:
+            from PySide6.QtWidgets import QStyleOptionViewItem
+            opt2 = QStyleOptionViewItem(opt)
+            opt2.rect.adjust(18, 0, 0, 0)
+            super().paint(p, opt2, index)
+        else:
+            super().paint(p, opt, index)
+        r = opt.rect
+        if index.column() != 0:
+            return
+        p.setPen(QPen(QColor(LINE)))
+        p.drawLine(r.topRight(), r.bottomRight())
+        if is_cat:
+            box = QRect(r.left() + 4, r.center().y() - 5, 10, 10)
+            p.setBrush(QColor("#1e1e1e"))
+            p.drawRect(box)
+            c = box.center()
+            p.drawLine(c.x() - 3, c.y(), c.x() + 3, c.y())
+            if not index.data(Qt.UserRole + 1):  # collapsed
+                p.drawLine(c.x(), c.y() - 3, c.x(), c.y() + 3)
+
+
+GRID_QSS = """
+QTreeWidget#propgrid { background: #1e1e1e; border: 1px solid #3f3f46;
+    outline: 0; }
+QTreeWidget#propgrid::item { border-bottom: 1px solid #333336; padding: 3px 2px; }
+QTreeWidget#propgrid::item:selected { background: transparent; color: inherit; }
+"""
+
+
+class PropertyGrid(QTreeWidget):
+    """Two-column property grid with +/- category toggles."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setObjectName("propgrid")
+        self.setStyleSheet(GRID_QSS)
+        self.setHeaderHidden(True)
+        self.setColumnCount(2)
+        self.setRootIsDecorated(False)
+        self.setIndentation(18)
+        self.setItemDelegate(_GridDelegate())
+        self.header().setStretchLastSection(True)
+        self.setColumnWidth(0, 118)
+
+    def mousePressEvent(self, e):
+        it = self.itemAt(e.position().toPoint())
+        if (it is not None and it.parent() is None
+                and it.childCount() > 0
+                and e.position().x() <= 22):
+            it.setExpanded(not it.isExpanded())
+            self._sync_cat_state(it)
+            return
+        super().mousePressEvent(e)
+
+    def add_category(self, text: str) -> QTreeWidgetItem:
+        it = QTreeWidgetItem([text])
+        f = QFont(self.font())
+        f.setBold(True)
+        it.setFont(0, f)
+        it.setData(0, Qt.UserRole, "cat")
+        it.setBackground(0, QColor(CAT_BG))
+        it.setBackground(1, QColor(CAT_BG))
+        self.addTopLevelItem(it)
+        it.setExpanded(True)
+        self._sync_cat_state(it)
+        return it
+
+    def _sync_cat_state(self, it: QTreeWidgetItem):
+        it.setData(0, Qt.UserRole + 1, it.isExpanded())
+
+    def add_property(self, cat: QTreeWidgetItem | None, name: str,
+                     widget: QWidget, desc: str = "") -> QTreeWidgetItem:
+        if cat is None:
+            it = QTreeWidgetItem([name])
+            self.addTopLevelItem(it)
+        else:
+            it = QTreeWidgetItem([name])
+            cat.addChild(it)
+        it.setData(0, Qt.UserRole + 2, desc)
+        self.setItemWidget(it, 1, widget)
+        return it
+
+
 class BindingEditor(QFrame):
-    """Properties window for one key or encoder binding."""
+    """PropertyGrid-style editor for one key or encoder binding."""
     binding_changed = Signal()
+    control_selected = Signal(str, str)  # ("key"|"encoder"), id
 
     def __init__(self, accent: str, parent=None):
         super().__init__(parent)
@@ -166,23 +230,57 @@ class BindingEditor(QFrame):
         self.id: str | None = None
         self._binding_ref = None
         self.label_edit = None
+        self.categorized = True
 
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(12, 10, 12, 10)
+        lay.setContentsMargins(10, 8, 10, 8)
         lay.setSpacing(6)
 
-        head = QHBoxLayout()
-        self.title = QLabel("—")
-        self.title.setStyleSheet("font-size: 16px; font-weight: 700;")
-        head.addWidget(self.title)
-        head.addStretch(1)
+        # toolbar strip
+        tb = QHBoxLayout()
+        tb.setSpacing(4)
+        self.sort_btn = QToolButton()
+        self.sort_btn.setText("⋮⋮")
+        self.sort_btn.setCheckable(True)
+        self.sort_btn.setToolTip("Toggle categorized / alphabetical")
+        self.sort_btn.setText("A→Z")
+        self.sort_btn.clicked.connect(self._toggle_sort)
+        tb.addWidget(self.sort_btn)
+        tb.addStretch(1)
         self.sub = QLabel("")
         self.sub.setObjectName("dim")
-        head.addWidget(self.sub)
-        lay.addLayout(head)
+        tb.addWidget(self.sub)
+        lay.addLayout(tb)
+
+        # object header combo
+        self.obj_combo = QComboBox()
+        self.obj_combo.setEditable(False)
+        for kid in KEY_IDS:
+            self.obj_combo.addItem(kid, ("key", kid))
+        for eid in ENCODER_IDS:
+            self.obj_combo.addItem(eid, ("encoder", eid))
+        self.obj_combo.currentIndexChanged.connect(self._obj_changed)
+        lay.addWidget(self.obj_combo)
 
         self.grid = PropertyGrid()
         lay.addWidget(self.grid, 1)
+        self.grid.currentItemChanged.connect(self._help_update)
+
+        # help/description panel
+        self.help_panel = QFrame()
+        hp = QVBoxLayout(self.help_panel)
+        hp.setContentsMargins(6, 4, 6, 4)
+        hp.setSpacing(1)
+        self.help_name = QLabel("")
+        f = QFont()
+        f.setBold(True)
+        self.help_name.setFont(f)
+        self.help_desc = QLabel("")
+        self.help_desc.setObjectName("dim")
+        self.help_desc.setWordWrap(True)
+        hp.addWidget(self.help_name)
+        hp.addWidget(self.help_desc)
+        lay.addWidget(self.help_panel)
 
         self.hint = QLabel("Select a key or knob on the pad to edit it.")
         self.hint.setObjectName("dim")
@@ -192,16 +290,28 @@ class BindingEditor(QFrame):
     def set_accent(self, accent: str):
         self.accent = accent
 
+    def _toggle_sort(self):
+        self.categorized = not self.categorized
+        self.sort_btn.setText("Cat" if not self.categorized else "A→Z")
+        if self._binding_ref is not None:
+            self._rebuild()
+
+    def _obj_changed(self, idx):
+        data = self.obj_combo.itemData(idx)
+        if data:
+            self.control_selected.emit(*data)
+
     def clear(self):
         self.kind = self.id = None
         self._binding_ref = None
         self.grid.clear()
-        self.title.setText("—")
         self.sub.setText("")
+        self.help_name.setText("")
+        self.help_desc.setText("")
         self.hint.show()
 
-    # ---- action editor wiring for one category ----
-    def _add_action(self, cat, action, get, setv):
+    # ---- action editor wiring ----
+    def _add_action(self, cat, action, setv):
         combo = QComboBox()
         for _, tname in TYPE_NAMES:
             combo.addItem(tname)
@@ -219,12 +329,15 @@ class BindingEditor(QFrame):
             i = stack.media_combo.findData(action.key)
             stack.media_combo.setCurrentIndex(max(0, i))
 
-        self.grid.add_property(cat, "Type", combo)
-        vitem = self.grid.add_property(cat, VALUE_NAME[TYPE_NAMES[idx][0]], stack)
+        self.grid.add_property(cat, "Type", combo,
+                               "What this control does")
+        vitem = self.grid.add_property(cat, VALUE_NAME[TYPE_NAMES[idx][0]],
+                                       stack, VALUE_DESC[TYPE_NAMES[idx][0]])
 
         def on_type(i):
             stack.setCurrentIndex(i)
             vitem.setText(0, VALUE_NAME[TYPE_NAMES[i][0]])
+            vitem.setData(0, Qt.UserRole + 2, VALUE_DESC[TYPE_NAMES[i][0]])
             _commit()
 
         def on_chord(chord):
@@ -249,42 +362,99 @@ class BindingEditor(QFrame):
         stack.media_combo.currentIndexChanged.connect(
             lambda _: _commit() if combo.currentIndex() == 2 else None)
 
-    def _label_row(self, cat, binding):
-        self.label_edit = QLineEdit(binding.label)
-        self.label_edit.setPlaceholderText("shown on the key")
-        self.label_edit.textEdited.connect(lambda _: self.binding_changed.emit())
-        self.grid.add_property(cat, "Label", self.label_edit)
+    def _build(self):
+        """Populate the grid for the current binding (used by both modes)."""
+        b = self._binding_ref
+        enc = self.kind == "encoder"
+
+        def gen_label(cat):
+            self.label_edit = QLineEdit(b.label)
+            self.label_edit.setPlaceholderText("shown on the key")
+            self.label_edit.textEdited.connect(
+                lambda _: self.binding_changed.emit())
+            self.grid.add_property(cat, "Label", self.label_edit,
+                                   "Text shown on the control")
+
+        def gen_action(cat, attr, sec):
+            act = getattr(b, attr) if enc else b.action
+            self._add_action(cat, act,
+                             lambda a, at=attr: (
+                                 setattr(b, at, a) if enc
+                                 else setattr(b, "action", a))
+                             or self.binding_changed.emit())
+
+        if enc:
+            if self.categorized:
+                gen_label(self.grid.add_category("General"))
+                for attr, sec in (("cw", "Turn right"), ("ccw", "Turn left"),
+                                  ("press", "Press")):
+                    gen_action(self.grid.add_category(sec), attr, sec)
+            else:
+                gen_label(None)
+                for attr, sec in (("cw", "Turn right"), ("ccw", "Turn left"),
+                                  ("press", "Press")):
+                    gen_action(None, attr, sec)
+                self._sort_flat()
+        else:
+            if self.categorized:
+                gen_label(self.grid.add_category("General"))
+                gen_action(self.grid.add_category("Action"), "action", "Action")
+            else:
+                gen_label(None)
+                gen_action(None, "action", "Action")
+                self._sort_flat()
+
+    def _sort_flat(self):
+        items = [self.grid.topLevelItem(i)
+                 for i in range(self.grid.topLevelItemCount())]
+        self.grid.clear()
+        for it in sorted(items, key=lambda x: x.text(0)):
+            self.grid.addTopLevelItem(it)
+
+    def _rebuild(self):
+        b = self._binding_ref
+        kind, kid = self.kind, self.id
+        if b is None:
+            return
+        self.grid.clear()
+        self._build()
+        self._binding_ref = b
+        self.kind, self.id = kind, kid
 
     # ---- public ----
     def show_key(self, kid: str, binding):
         self.clear()
         self.kind, self.id = "key", kid
         self.hint.hide()
-        self.title.setText(kid)
-        self.sub.setText("key press")
         self._binding_ref = binding
-        gen = self.grid.add_category("General")
-        self._label_row(gen, binding)
-        act = self.grid.add_category("Action")
-        self._add_action(act, binding.action,
-                         lambda: binding.action,
-                         lambda a: self._set_action(a))
+        self.sub.setText(f"{kid} · key press")
+        self._set_combo("key", kid)
+        self._build()
 
     def show_encoder(self, eid: str, binding):
         self.clear()
         self.kind, self.id = "encoder", eid
         self.hint.hide()
-        self.title.setText(eid)
-        self.sub.setText("encoder")
         self._binding_ref = binding
-        gen = self.grid.add_category("General")
-        self._label_row(gen, binding)
-        for attr, sec in (("cw", "Turn right"), ("ccw", "Turn left"),
-                          ("press", "Press")):
-            cat = self.grid.add_category(sec)
-            self._add_action(cat, getattr(binding, attr),
-                             lambda: getattr(binding, attr),
-                             lambda a, at=attr: self._set_enc(at, a))
+        self.sub.setText(f"{eid} · encoder")
+        self._set_combo("encoder", eid)
+        self._build()
+
+    def _set_combo(self, kind, cid):
+        for i in range(self.obj_combo.count()):
+            if self.obj_combo.itemData(i) == (kind, cid):
+                self.obj_combo.blockSignals(True)
+                self.obj_combo.setCurrentIndex(i)
+                self.obj_combo.blockSignals(False)
+                break
+
+    def _help_update(self, cur, _prev):
+        if cur is None:
+            self.help_name.setText("")
+            self.help_desc.setText("")
+            return
+        self.help_name.setText(cur.text(0))
+        self.help_desc.setText(cur.data(0, Qt.UserRole + 2) or "")
 
     def _set_action(self, action):
         self._binding_ref.action = action

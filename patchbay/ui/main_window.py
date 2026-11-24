@@ -4,12 +4,13 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (QComboBox, QHBoxLayout, QLabel, QMainWindow,
+from PySide6.QtWidgets import (QHBoxLayout, QLabel, QMainWindow,
                                QPushButton, QVBoxLayout, QWidget)
 
 from ..core.profile import load_profiles
 from .binding_editor import BindingEditor
 from .keypad_widget import KeypadWidget
+from .profile_panel import ProfilePanel
 from .theme import ACCENT_DEFAULT, QSS, PANEL, segmented_qss
 
 
@@ -38,13 +39,6 @@ class MainWindow(QMainWindow):
         head.addWidget(brand)
         head.addSpacing(16)
 
-        self.profile_combo = QComboBox()
-        self.profile_combo.setMinimumWidth(180)
-        for pr in self.profiles:
-            self.profile_combo.addItem(pr.app)
-        self.profile_combo.currentIndexChanged.connect(self._profile_changed)
-        head.addWidget(self.profile_combo)
-
         head.addStretch(1)
 
         self.layer_btns: list[QPushButton] = []
@@ -63,9 +57,18 @@ class MainWindow(QMainWindow):
         body.setSpacing(14)
 
         self.editor = BindingEditor(self.accent())
-        self.editor.setFixedWidth(340)
         self.editor.binding_changed.connect(self._binding_changed)
-        body.addWidget(self.editor, 0)
+        self.editor.control_selected.connect(self.select)
+
+        self.profile_panel = ProfilePanel(self)
+        left_w = QWidget()
+        left_lay = QVBoxLayout(left_w)
+        left_lay.setContentsMargins(0, 0, 0, 0)
+        left_lay.setSpacing(12)
+        left_lay.addWidget(self.profile_panel)
+        left_lay.addWidget(self.editor, 1)
+        left_w.setFixedWidth(340)
+        body.addWidget(left_w, 0)
 
         self.keypad = KeypadWidget()
         self.keypad.setMaximumWidth(640)
@@ -107,6 +110,21 @@ class MainWindow(QMainWindow):
         self.editor.clear()
         self.keypad.sel = None
         self._load_profile()
+
+    def reload_profiles(self, select: str | None = None):
+        self.profiles = load_profiles(self.profiles_dir)
+        idx = 0
+        if select:
+            for i, pr in enumerate(self.profiles):
+                if pr.app == select:
+                    idx = i
+                    break
+        self.profile = self.profiles[idx] if self.profiles else None
+        self.editor.clear()
+        self.keypad.sel = None
+        if self.profile:
+            self._load_profile()
+        self.profile_panel.refresh()
 
     def _layer_changed(self, idx):
         self.layer_idx = idx
