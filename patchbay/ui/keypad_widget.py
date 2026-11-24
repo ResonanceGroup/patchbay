@@ -26,15 +26,15 @@ class KnobRow(QWidget):
         self.sel_id: str | None = None
         self.accent = "#007acc"
         self._knob_rects: dict[str, QRectF] = {}
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.setMinimumHeight(110)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setMinimumHeight(150)
 
     def paintEvent(self, _):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
         w, h = self.width(), self.height()
-        kr = min(w, h) * 0.17
-        kcy = h * 0.40
+        kr = min(w * 0.10, h * 0.34)
+        kcy = h * 0.42
         self._knob_rects.clear()
         for i, eid in enumerate(ENCODER_IDS):
             kcx = w * (0.32 + 0.36 * i)
@@ -124,7 +124,9 @@ class KeypadWidget(QWidget):
         self.sel: tuple[str, str] | None = None
         self.accent = "#007acc"
 
-        self.setMinimumSize(300, 380)
+        # 4:3 landscape case: width expands, height stays at the layout's hint
+        self.setMinimumSize(400, 300)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         lay = QVBoxLayout(self)
         lay.setContentsMargins(24, 24, 24, 24)
@@ -152,7 +154,7 @@ class KeypadWidget(QWidget):
             r, c = divmod(idx, 3)
             b = QPushButton()
             b.setCheckable(True)
-            b.setMinimumHeight(44)
+            b.setMinimumHeight(52)
             b.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             b.setCursor(Qt.PointingHandCursor)
             b.clicked.connect(lambda _, k=kid: self._pick_key(k))

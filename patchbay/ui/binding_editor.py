@@ -1,16 +1,22 @@
-"""Left panel: VS Code settings-style property rows for the selected control."""
+"""Left panel: VS Code settings-editor style property window for the selected control.
+
+Each setting is a row: name + description on the left, control on the right,
+with a separator between rows. Sections group related settings.
+"""
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (QComboBox, QFrame, QHBoxLayout, QLabel,
-                               QLineEdit, QPushButton, QStackedWidget,
-                               QVBoxLayout, QWidget)
+                               QLineEdit, QPushButton, QSizePolicy,
+                               QStackedWidget, QVBoxLayout, QWidget)
 
 from ..core.actions import KeysAction, MediaAction, NoneAction, TextAction
-from .theme import DIM, FAINT, MONO
+from .theme import BORDER, DIM, FAINT, MONO
 
 TYPE_NAMES = [("keys", "Keys"), ("text", "Text"), ("media", "Media"),
               ("macro", "Macro"), ("none", "None")]
+VALUE_NAME = {"keys": "Keys", "text": "Text", "media": "Media",
+              "macro": "Macro", "none": "Value"}
 
 _SPECIAL = {
     Qt.Key_Home: "home", Qt.Key_End: "end", Qt.Key_Delete: "delete",
@@ -25,7 +31,7 @@ _SPECIAL = {
 for i in range(1, 13):
     _SPECIAL[getattr(Qt, f"Key_F{i}")] = f"f{i}"
 
-NAME_COL = 96
+CTRL_W = 230
 
 
 def _qt_to_name(key: int) -> str | None:
@@ -76,57 +82,64 @@ class ChordRecorder(QPushButton):
         self.captured.emit(chord)
 
 
-class PropRow(QWidget):
-    """One settings row: name | type combo | value control."""
+class SettingRow(QFrame):
+    """One VS Code-style setting: name+description left, control right."""
+
+    def __init__(self, name: str, desc: str, control: QWidget, parent=None):
+        super().__init__(parent)
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(2, 8, 2, 8)
+        lay.setSpacing(12)
+        left = QVBoxLayout()
+        left.setSpacing(1)
+        n = QLabel(name)
+        d = QLabel(desc)
+        d.setObjectName("faint")
+        d.setStyleSheet(f"color: {FAINT}; font-size: 12px;")
+        left.addWidget(n)
+        left.addWidget(d)
+        lay.addLayout(left, 1)
+        control.setFixedWidth(CTRL_W)
+        lay.addWidget(control, 0)
+
+
+class TypeControl(QWidget):
+    """Type combo + matching value control; get/set a core Action."""
     changed = Signal()
 
-    def __init__(self, name: str, accent: str, parent=None):
+    def __init__(self, value_name_lbl: QLabel | None = None, parent=None):
         super().__init__(parent)
-        self.accent = accent
         self.action = NoneAction()
-
+        self.value_name_lbl = value_name_lbl
         lay = QHBoxLayout(self)
         lay.setContentsMargins(0, 0, 0, 0)
-        lay.setSpacing(8)
-
-        self.name_lbl = QLabel(name)
-        self.name_lbl.setObjectName("dim")
-        self.name_lbl.setFixedWidth(NAME_COL)
-        lay.addWidget(self.name_lbl)
-
+        lay.setSpacing(6)
         self.type_combo = QComboBox()
         for _, tname in TYPE_NAMES:
             self.type_combo.addItem(tname)
-        self.type_combo.setFixedWidth(88)
+        self.type_combo.setFixedWidth(86)
         lay.addWidget(self.type_combo)
-
         self.stack = QStackedWidget()
-        # 0 keys
         keys_page = QWidget()
         kl = QHBoxLayout(keys_page)
         kl.setContentsMargins(0, 0, 0, 0)
         self.chords = QLabel("")
-        self.chords.setObjectName("mono")
         self.chords.setStyleSheet(f"color: {DIM}; font-family: '{MONO}';")
         kl.addWidget(self.chords, 1)
         self.recorder = ChordRecorder()
-        self.recorder.setFixedWidth(78)
+        self.recorder.setFixedWidth(74)
         kl.addWidget(self.recorder)
         self.stack.addWidget(keys_page)
-        # 1 text
         self.text_edit = QLineEdit()
         self.text_edit.setPlaceholderText("text to type")
         self.stack.addWidget(self.text_edit)
-        # 2 media
         self.media_combo = QComboBox()
         for k in MediaAction.MEDIA_KEYS:
             self.media_combo.addItem(k.replace("_", " "), k)
         self.stack.addWidget(self.media_combo)
-        # 3 macro
-        self.macro_lbl = QLabel("editor coming soon")
-        self.macro_lbl.setStyleSheet(f"color: {FAINT};")
-        self.stack.addWidget(self.macro_lbl)
-        # 4 none
+        macro_lbl = QLabel("editor coming soon")
+        macro_lbl.setStyleSheet(f"color: {FAINT};")
+        self.stack.addWidget(macro_lbl)
         none_lbl = QLabel("unbound")
         none_lbl.setStyleSheet(f"color: {FAINT};")
         self.stack.addWidget(none_lbl)
@@ -138,8 +151,13 @@ class PropRow(QWidget):
         self.media_combo.currentIndexChanged.connect(
             lambda _: self._commit() if self.type_combo.currentIndex() == 2 else None)
 
+    def _tname(self) -> str:
+        return TYPE_NAMES[self.type_combo.currentIndex()][0]
+
     def _type_changed(self, idx):
         self.stack.setCurrentIndex(idx)
+        if self.value_name_lbl:
+            self.value_name_lbl.setText(VALUE_NAME[self._tname()])
         self._commit()
 
     def _chord_captured(self, chord):
@@ -149,10 +167,8 @@ class PropRow(QWidget):
         self.changed.emit()
 
     def _commit(self):
-        t = TYPE_NAMES[self.type_combo.currentIndex()][0]
-        if t == "keys" and isinstance(self.action, KeysAction):
-            pass
-        elif t == "text":
+        t = self._tname()
+        if t == "text":
             self.action = TextAction(text=self.text_edit.text())
         elif t == "media":
             self.action = MediaAction(key=self.media_combo.currentData())
@@ -168,6 +184,8 @@ class PropRow(QWidget):
         self.type_combo.setCurrentIndex(idx)
         self.stack.setCurrentIndex(idx)
         self.type_combo.blockSignals(False)
+        if self.value_name_lbl:
+            self.value_name_lbl.setText(VALUE_NAME[TYPE_NAMES[idx][0]])
         if t == "keys":
             self.chords.setText(" + ".join(self.action.keys))
         elif t == "text":
@@ -181,7 +199,7 @@ class PropRow(QWidget):
 
 
 class BindingEditor(QFrame):
-    """Settings-style editor for one key or encoder binding."""
+    """Settings window for one key or encoder binding."""
     binding_changed = Signal()
 
     def __init__(self, accent: str, parent=None):
@@ -191,10 +209,11 @@ class BindingEditor(QFrame):
         self.kind: str | None = None
         self.id: str | None = None
         self._binding_ref = None
+        self.label_edit = None
 
         lay = QVBoxLayout(self)
         lay.setContentsMargins(14, 12, 14, 12)
-        lay.setSpacing(8)
+        lay.setSpacing(4)
 
         head = QHBoxLayout()
         self.title = QLabel("—")
@@ -206,15 +225,15 @@ class BindingEditor(QFrame):
         head.addWidget(self.sub)
         lay.addLayout(head)
 
-        self.rows_host = QVBoxLayout()
-        self.rows_host.setSpacing(8)
-        lay.addLayout(self.rows_host)
+        self.rows = QVBoxLayout()
+        self.rows.setSpacing(0)
+        lay.addLayout(self.rows)
+        lay.addStretch(1)
 
         self.hint = QLabel("Select a key or knob on the pad to edit it.")
         self.hint.setObjectName("dim")
         self.hint.setWordWrap(True)
         lay.addWidget(self.hint)
-        lay.addStretch(1)
 
     def set_accent(self, accent: str):
         self.accent = accent
@@ -224,34 +243,37 @@ class BindingEditor(QFrame):
         self._binding_ref = None
         self.title.setText("—")
         self.sub.setText("")
-        while self.rows_host.count():
-            item = self.rows_host.takeAt(0)
+        while self.rows.count():
+            item = self.rows.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
         self.hint.show()
 
-    def _add_label_row(self, binding):
-        row = QWidget()
-        rl = QHBoxLayout(row)
-        rl.setContentsMargins(0, 0, 0, 0)
-        rl.setSpacing(8)
-        lbl = QLabel("Label")
-        lbl.setObjectName("dim")
-        lbl.setFixedWidth(NAME_COL)
-        rl.addWidget(lbl)
+    # ---- building blocks ----
+    def _section(self, text: str):
+        lbl = QLabel(text)
+        lbl.setStyleSheet(f"font-weight: 700; font-size: 12px; color: {DIM};"
+                         f" padding-top: 10px;")
+        self.rows.addWidget(lbl)
+
+    def _sep(self):
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setStyleSheet(f"color: {BORDER}; background: {BORDER};"
+                           " max-height: 1px; border: none;")
+        self.rows.addWidget(line)
+
+    def _row(self, name: str, desc: str, control: QWidget):
+        self.rows.addWidget(SettingRow(name, desc, control))
+        self._sep()
+
+    def _label_row(self, binding):
         self.label_edit = QLineEdit(binding.label)
         self.label_edit.setPlaceholderText("shown on the key")
         self.label_edit.textEdited.connect(lambda _: self.binding_changed.emit())
-        rl.addWidget(self.label_edit, 1)
-        self.rows_host.addWidget(row)
+        self._row("Label", "text shown on the key", self.label_edit)
 
-    def _add_prop_row(self, name, action, on_changed):
-        row = PropRow(name, self.accent)
-        row.set_action(action)
-        row.changed.connect(on_changed)
-        self.rows_host.addWidget(row)
-        return row
-
+    # ---- public ----
     def show_key(self, kid: str, binding):
         self.clear()
         self.kind, self.id = "key", kid
@@ -259,9 +281,16 @@ class BindingEditor(QFrame):
         self.title.setText(kid)
         self.sub.setText("key press")
         self._binding_ref = binding
-        self._add_label_row(binding)
-        row = self._add_prop_row("Action", binding.action, lambda: None)
-        row.changed.connect(lambda: self._set_action(row.get_action()))
+        self._section("GENERAL")
+        self._label_row(binding)
+        self._section("ACTION")
+        value_name = QLabel("Keys")
+        tc = TypeControl(value_name)
+        tc.set_action(binding.action)
+        tc.changed.connect(lambda: self._set_action(tc.get_action()))
+        self._row("Type", "what this key does", tc.type_combo)
+        self._row(VALUE_NAME[getattr(binding.action, "type", "none")],
+                  "the action's value", tc)
 
     def show_encoder(self, eid: str, binding):
         self.clear()
@@ -270,11 +299,17 @@ class BindingEditor(QFrame):
         self.title.setText(eid)
         self.sub.setText("encoder")
         self._binding_ref = binding
-        self._add_label_row(binding)
-        for attr, name in (("cw", "↻ Turn right"), ("ccw", "↺ Turn left"),
-                           ("press", "Press")):
-            row = self._add_prop_row(name, getattr(binding, attr), lambda: None)
-            row.changed.connect(lambda a=attr, r=row: self._set_enc(a, r.get_action()))
+        self._section("GENERAL")
+        self._label_row(binding)
+        for attr, sec, desc in (("cw", "TURN RIGHT", "turn the knob clockwise"),
+                                ("ccw", "TURN LEFT", "turn the knob counter-clockwise"),
+                                ("press", "PRESS", "press the knob down")):
+            self._section(sec)
+            tc = TypeControl()
+            tc.set_action(getattr(binding, attr))
+            tc.changed.connect(lambda a=attr, t=tc: self._set_enc(a, t.get_action()))
+            self._row("Type", desc, tc.type_combo)
+            self._row("Value", "the action's value", tc)
 
     def _set_action(self, action):
         self._binding_ref.action = action
@@ -285,4 +320,4 @@ class BindingEditor(QFrame):
         self.binding_changed.emit()
 
     def current_label(self) -> str:
-        return self.label_edit.text().strip()
+        return self.label_edit.text().strip() if self.label_edit else ""
