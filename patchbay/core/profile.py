@@ -82,14 +82,17 @@ class Layer:
 
 @dataclass
 class Profile:
-    """One application profile."""
+    """One keymap profile, grouped under an application."""
     app: str = "General"
-    match: dict[str, Any] = field(default_factory=dict)  # e.g. {"wm_class": ["kicad"]}
+    name: str = ""
+    match: dict[str, Any] = field(default_factory=dict)  # {"wm_class": [...], "title": [...]}
     accent: str = "#4a8fd4"
     layers: list[Layer] = field(default_factory=list)
     path: Path | None = None
 
     def __post_init__(self):
+        if not self.name:
+            self.name = self.app
         if not self.layers:
             self.layers = [Layer(name=f"L{i}") for i in range(1, LAYER_COUNT + 1)]
 
@@ -98,6 +101,8 @@ class Profile:
 
     def to_dict(self) -> dict[str, Any]:
         d: dict[str, Any] = {"app": self.app}
+        if self.name and self.name != self.app:
+            d["name"] = self.name
         if self.match:
             d["match"] = self.match
         if self.accent != "#4a8fd4":
@@ -143,6 +148,7 @@ def load_profile(path: Path) -> Profile:
         layers.append(Layer(name=f"L{len(layers) + 1}"))
     return Profile(
         app=data.get("app", path.stem),
+        name=data.get("name", data.get("app", path.stem)),
         match=data.get("match", {}),
         accent=data.get("accent", "#4a8fd4"),
         layers=layers,
@@ -155,3 +161,45 @@ def load_profiles(directory: Path) -> list[Profile]:
         (load_profile(p) for p in directory.glob("*.json")),
         key=lambda pr: (pr.app != "General", pr.app.lower()),
     )
+
+
+def app_groups(profiles: list[Profile]) -> list[str]:
+    """Distinct application names, in list order."""
+    seen: list[str] = []
+    for pr in profiles:
+        if pr.app not in seen:
+            seen.append(pr.app)
+    return seen
+
+
+class ProfileState:
+    """Persisted UI state: last profile selected per application, and the
+    auto-switch toggle. Stored as _state.json inside the profiles dir."""
+
+    def __init__(self, path: Path):
+        self.path = path
+        self.data: dict = {}
+        if path.exists():
+            try:
+                self.data = json.loads(path.read_text())
+            except (json.JSONDecodeError, OSError):
+                self.data = {}
+
+    def last_profile(self, app: str) -> str | None:
+        return self.data.get("last", {}).get(app)
+
+    def set_last_profile(self, app: str, name: str):
+        self.data.setdefault("last", {})[app] = name
+        self._save()
+
+    @property
+    def auto_switch(self) -> bool:
+        return bool(self.data.get("auto_switch", False))
+
+    @auto_switch.setter
+    def auto_switch(self, on: bool):
+        self.data["auto_switch"] = bool(on)
+        self._save()
+
+    def _save(self):
+        self.path.write_text(json.dumps(self.data, indent=2) + "\n")

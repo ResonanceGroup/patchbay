@@ -3,11 +3,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (QHBoxLayout, QLabel, QMainWindow,
                                QPushButton, QVBoxLayout, QWidget)
 
-from ..core.profile import load_profiles
+from ..core.profile import ProfileState, load_profiles
+from ..core.window_rules import active_window, best_profile
 from .binding_editor import BindingEditor
 from .keypad_widget import KeypadWidget
 from .profile_panel import ProfilePanel
@@ -18,6 +19,7 @@ class MainWindow(QMainWindow):
     def __init__(self, profiles_dir: Path):
         super().__init__()
         self.profiles_dir = profiles_dir
+        self.state = ProfileState(profiles_dir / "_state.json")
         self.profiles = load_profiles(profiles_dir)
         self.profile = self.profiles[0] if self.profiles else None
         self.layer_idx = 0
@@ -94,6 +96,41 @@ class MainWindow(QMainWindow):
         if self.profile:
             self._load_profile()
 
+        # ---- auto-switch: watch the focused window ----
+        self._watch_timer = QTimer(self)
+        self._watch_timer.setInterval(700)
+        self._watch_timer.timeout.connect(self._check_focus)
+        if self.state.auto_switch:
+            self._watch_timer.start()
+
+    def set_auto_switch(self, on: bool):
+        if on:
+            self._watch_timer.start()
+        else:
+            self._watch_timer.stop()
+
+    def _check_focus(self):
+        if not self.isVisible():
+            return
+        win = active_window()
+        if win is None:
+            return
+        cls, title = win
+        pr = best_profile(self.profiles, cls, title)
+        if pr is not None and pr is not self.profile:
+            self.select_profile(pr, from_auto=True)
+
+    def select_profile(self, pr, from_list=False, from_auto=False):
+        if pr.path is None or pr not in self.profiles:
+            return
+        self.profile = pr
+        self.state.set_last_profile(pr.app, pr.name)
+        self.editor.clear()
+        self.keypad.sel = None
+        self._load_profile()
+        if not from_list:
+            self.profile_panel.refresh()
+
     def accent(self) -> str:
         return self.profile.accent if self.profile else ACCENT_DEFAULT
 
@@ -103,23 +140,26 @@ class MainWindow(QMainWindow):
         self.editor.set_accent(self.accent())
         for b in self.layer_btns:
             b.setStyleSheet(segmented_qss(self.accent()))
-        self.status.setText(f"profile: {self.profile.app}   ·   file: {self.profile.path.name}")
-
-    def _profile_changed(self, idx):
-        self.profile = self.profiles[idx]
-        self.editor.clear()
-        self.keypad.sel = None
-        self._load_profile()
+        self.status.setText(
+            f"profile: {self.profile.name}   ·   file: {self.profile.path.name}")
 
     def reload_profiles(self, select: str | None = None):
+        cur_path = self.profile.path if self.profile else None
         self.profiles = load_profiles(self.profiles_dir)
-        idx = 0
+        target = None
         if select:
-            for i, pr in enumerate(self.profiles):
-                if pr.app == select:
-                    idx = i
+            for pr in self.profiles:
+                if pr.name == select:
+                    target = pr
                     break
-        self.profile = self.profiles[idx] if self.profiles else None
+        if target is None:
+            for pr in self.profiles:
+                if pr.path == cur_path:
+                    target = pr
+                    break
+        if target is None:
+            target = self.profiles[0] if self.profiles else None
+        self.profile = target
         self.editor.clear()
         self.keypad.sel = None
         if self.profile:
@@ -154,7 +194,7 @@ class MainWindow(QMainWindow):
     def _save(self):
         self.profile.save()
         self.status.setText(
-            f"profile: {self.profile.app}   ·   saved {self.profile.path.name}")
+            f"profile: {self.profile.name}   ·   saved {self.profile.path.name}")
 
     # screenshot helper
     def select(self, spec: str):

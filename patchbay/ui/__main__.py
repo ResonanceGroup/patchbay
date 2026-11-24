@@ -28,10 +28,10 @@ def main():
     else:
         w.resize(1180, 800)
     if args.profile:
-        for i, pr in enumerate(w.profiles):
-            if pr.app == args.profile:
-                w._profile_changed(i)
-                w.profile_panel.refresh()
+        for pr in w.profiles:
+            if pr.app == args.profile or pr.name == args.profile:
+                w.select_profile(pr)
+                break
     w._layer_changed(args.layer)
     w.show()
     if args.screenshot:
