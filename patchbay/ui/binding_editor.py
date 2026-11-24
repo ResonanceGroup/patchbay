@@ -260,6 +260,15 @@ QTreeWidget#propgrid QComboBox[open="true"]::down-arrow {
 QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
 QTreeWidget#propgrid QComboBox QAbstractItemView { background: #2d2d30;
     border: 1px solid #3f3f46; selection-background-color: #3399ff; }
+QTreeWidget#propgrid QScrollBar:vertical { background: #1e1e1e; width: 12px;
+    margin: 0; border: none; }
+QTreeWidget#propgrid QScrollBar::handle:vertical { background: #3e3e42;
+    min-height: 30px; border-radius: 3px; margin: 2px 3px; }
+QTreeWidget#propgrid QScrollBar::handle:vertical:hover { background: #4a4a52; }
+QTreeWidget#propgrid QScrollBar::add-line:vertical,
+QTreeWidget#propgrid QScrollBar::sub-line:vertical { height: 0; }
+QTreeWidget#propgrid QScrollBar::add-page:vertical,
+QTreeWidget#propgrid QScrollBar::sub-page:vertical { background: transparent; }
 """
 # absolute paths to the arrow assets (QSS url() is cwd-relative otherwise);
 # replace the UP placeholder first — it contains the DOWN one as a substring
