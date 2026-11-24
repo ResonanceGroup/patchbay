@@ -386,24 +386,29 @@ class BindingEditor(QFrame):
         lay.addWidget(self.obj_combo)
 
         self.grid = PropertyGrid()
+        self.grid.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         lay.addWidget(self.grid, 1)
         self.grid.currentItemChanged.connect(self._help_update)
 
-        # help/description panel
+        # help/description panel — VS Properties style: flat, same background
+        # as the grid, no box, just a divider line above; labels fill the frame
         self.help_panel = QFrame()
         self.help_panel.setStyleSheet(
-            "QFrame#helppanel { border: 1px solid #3f3f46; }")
+            "QFrame#helppanel { border: none; border-top: 1px solid #37373d;"
+            " background: #252526; }")
         self.help_panel.setObjectName("helppanel")
         hp = QVBoxLayout(self.help_panel)
-        hp.setContentsMargins(6, 4, 6, 4)
-        hp.setSpacing(1)
+        hp.setContentsMargins(0, 0, 0, 0)
+        hp.setSpacing(0)
         self.help_name = QLabel("")
         f = QFont()
         f.setBold(True)
         self.help_name.setFont(f)
+        self.help_name.setStyleSheet("padding: 5px 6px 0 6px;")
         self.help_desc = QLabel("")
         self.help_desc.setObjectName("dim")
         self.help_desc.setWordWrap(True)
+        self.help_desc.setStyleSheet("padding: 1px 6px 5px 6px;")
         hp.addWidget(self.help_name)
         hp.addWidget(self.help_desc)
         lay.addWidget(self.help_panel)
