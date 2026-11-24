@@ -29,6 +29,7 @@ class ProfilePanel(QFrame):
         lay = QVBoxLayout(self)
         lay.setContentsMargins(10, 8, 10, 8)
         lay.setSpacing(6)
+        self.setMinimumHeight(150)
 
         # ---- application row ----
         arow = QHBoxLayout()
