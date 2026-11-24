@@ -148,7 +148,7 @@ class MainWindow(QMainWindow):
         for b in self.layer_btns:
             b.setStyleSheet(segmented_qss(self.accent()))
         self.status.setText(
-            f"profile: {self.profile.name}   ·   file: {self.profile.path.name}")
+            f"profile: {self.profile.name}   ·   app: {self.profile.app}")
 
     def reload_profiles(self, select: str | None = None):
         cur_path = self.profile.path if self.profile else None
