@@ -261,11 +261,12 @@ QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
 QTreeWidget#propgrid QComboBox QAbstractItemView { background: #2d2d30;
     border: 1px solid #3f3f46; selection-background-color: #3399ff; }
 """
-# absolute path to the arrow asset (QSS url() is cwd-relative otherwise)
-GRID_QSS = GRID_QSS.replace(
-    "_ARROW_PNG_", str(Path(__file__).parent / "assets" / "down_arrow.png"))
+# absolute paths to the arrow assets (QSS url() is cwd-relative otherwise);
+# replace the UP placeholder first — it contains the DOWN one as a substring
 GRID_QSS = GRID_QSS.replace(
     "_UP_ARROW_PNG_", str(Path(__file__).parent / "assets" / "up_arrow.png"))
+GRID_QSS = GRID_QSS.replace(
+    "_ARROW_PNG_", str(Path(__file__).parent / "assets" / "down_arrow.png"))
 
 
 class PropertyGrid(QTreeWidget):
