@@ -137,7 +137,10 @@ class _GridDelegate(QStyledItemDelegate):
     def paint(self, p, opt, index):
         is_cat = index.sibling(index.row(), 0).data(Qt.UserRole) == "cat"
         r = opt.rect
-        p.fillRect(r, QColor("#45454b") if is_cat else QColor("#2d2d30"))
+        if is_cat or index.column() == 0:
+            p.fillRect(r, QColor("#2d2d30"))
+        else:
+            p.fillRect(r, QColor("#252526"))
         text = index.data(Qt.DisplayRole) or ""
         p.setFont(opt.font)
         if index.column() == 0 and text:
@@ -165,15 +168,15 @@ class _GridDelegate(QStyledItemDelegate):
 
 
 GRID_QSS = """
-QTreeWidget#propgrid { background: #1e1e1e; border: 1px solid #3f3f46;
+QTreeWidget#propgrid { background: #252526; border: 1px solid #3f3f46;
     outline: 0; font-size: 14px; }
 QTreeWidget#propgrid QLineEdit, QTreeWidget#propgrid QComboBox {
-    background: #2d2d30; border: none; padding: 4px 6px; min-height: 18px; }
+    background: #252526; border: none; padding: 4px 6px; min-height: 18px; }
 QTreeWidget#propgrid QComboBox::drop-down { background: transparent;
     border: none; width: 18px; }
 QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
-QTreeWidget#propgrid QComboBox QAbstractItemView { background: #3c3c3c;
-    border: 1px solid #3f3f46; selection-background-color: #4a4a50; }
+QTreeWidget#propgrid QComboBox QAbstractItemView { background: #2d2d30;
+    border: 1px solid #3f3f46; selection-background-color: #3399ff; }
 """
 
 
@@ -283,7 +286,7 @@ class BindingEditor(QFrame):
             "QComboBox#objheader { background: #2d2d30; border: 1px solid "
             "#3f3f46; border-radius: 4px; font-size: 15px; padding: 5px 8px; }"
             "QComboBox#objheader::drop-down { border: none; width: 18px; }"
-            "QComboBox#objheader QAbstractItemView { background: #3c3c3c; "
+            "QComboBox#objheader QAbstractItemView { background: #2d2d30; "
             "border: 1px solid #3f3f46; selection-background-color: #37373d; }")
         self.obj_combo.setEditable(False)
         for kid in KEY_IDS:
