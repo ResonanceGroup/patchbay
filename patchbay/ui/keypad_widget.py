@@ -121,6 +121,7 @@ class KeypadWidget(QWidget):
         super().__init__(parent)
         self.profile = None
         self.layer_idx = 0
+        self.sel: tuple[str, str] | None = None
         self.accent = "#007acc"
 
         self.setMinimumSize(470, 600)
@@ -217,6 +218,7 @@ class KeypadWidget(QWidget):
         self.update()
 
     def select(self, kind: str, ident: str):
+        self.sel = (kind, ident)
         for kid, b in self.key_btns.items():
             b.setChecked(kind == "key" and kid == ident)
         self.knob_row.sel_id = ident if kind == "encoder" else None
