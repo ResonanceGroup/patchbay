@@ -136,18 +136,19 @@ class _GridDelegate(QStyledItemDelegate):
 
     def paint(self, p, opt, index):
         is_cat = index.sibling(index.row(), 0).data(Qt.UserRole) == "cat"
-        if is_cat:
-            p.fillRect(opt.rect, QColor("#37373d"))
-        opt2 = QStyleOptionViewItem(opt)
-        if is_cat and index.column() == 0:
-            opt2.rect.adjust(22, 0, 0, 0)
-        elif index.column() == 0:
-            opt2.rect.adjust(8, 0, 0, 0)
-        super().paint(p, opt2, index)
         r = opt.rect
+        p.fillRect(r, QColor("#45454b") if is_cat else QColor("#3c3c3c"))
+        text = index.data(Qt.DisplayRole) or ""
+        p.setFont(opt.font)
+        if index.column() == 0 and text:
+            off = 22 if is_cat else 16
+            p.setPen(QColor("#e8e8e8") if is_cat else QColor("#d4d4d4"))
+            p.drawText(r.adjusted(off, 0, -4, 0),
+                       int(Qt.AlignVCenter | Qt.AlignLeft), text)
+        p.setPen(QPen(QColor("#333336")))
+        p.drawLine(r.bottomLeft(), r.bottomRight())
         if index.column() != 0:
             return
-        p.setPen(QPen(QColor("#333336")))
         p.drawLine(r.topRight(), r.bottomRight())
         if is_cat:
             cx, cy = r.left() + 10, r.center().y()
@@ -166,14 +167,13 @@ class _GridDelegate(QStyledItemDelegate):
 GRID_QSS = """
 QTreeWidget#propgrid { background: #1e1e1e; border: 1px solid #3f3f46;
     outline: 0; font-size: 14px; }
-QTreeWidget#propgrid::item { border-bottom: 1px solid #333336; padding: 0; }
 QTreeWidget#propgrid QLineEdit, QTreeWidget#propgrid QComboBox {
-    background: #1e1e1e; border: none; padding: 4px 6px; min-height: 18px; }
+    background: #3c3c3c; border: none; padding: 4px 6px; min-height: 18px; }
 QTreeWidget#propgrid QComboBox::drop-down { background: transparent;
     border: none; width: 18px; }
 QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
-QTreeWidget#propgrid QComboBox QAbstractItemView { background: #1e1e1e;
-    border: 1px solid #3f3f46; selection-background-color: #37373d; }
+QTreeWidget#propgrid QComboBox QAbstractItemView { background: #3c3c3c;
+    border: 1px solid #3f3f46; selection-background-color: #4a4a50; }
 """
 
 
@@ -209,8 +209,8 @@ class PropertyGrid(QTreeWidget):
         f.setBold(True)
         it.setFont(0, f)
         it.setData(0, Qt.UserRole, "cat")
-        it.setBackground(0, QColor("#37373d"))
-        it.setBackground(1, QColor("#37373d"))
+        it.setBackground(0, QColor("#45454b"))
+        it.setBackground(1, QColor("#45454b"))
         it.setSizeHint(0, QSize(0, 25))
         self.addTopLevelItem(it)
         it.setExpanded(True)
@@ -229,6 +229,8 @@ class PropertyGrid(QTreeWidget):
             it = QTreeWidgetItem([name])
             cat.addChild(it)
         it.setSizeHint(0, QSize(0, 34))
+        it.setBackground(0, QColor("#3c3c3c"))
+        it.setBackground(1, QColor("#3c3c3c"))
         it.setData(0, Qt.UserRole + 2, desc)
         self.setItemWidget(it, 1, widget)
         return it
@@ -290,7 +292,7 @@ class BindingEditor(QFrame):
             "QComboBox#objheader { background: #2d2d30; border: 1px solid "
             "#3f3f46; border-radius: 4px; font-size: 15px; padding: 5px 8px; }"
             "QComboBox#objheader::drop-down { border: none; width: 18px; }"
-            "QComboBox#objheader QAbstractItemView { background: #1e1e1e; "
+            "QComboBox#objheader QAbstractItemView { background: #3c3c3c; "
             "border: 1px solid #3f3f46; selection-background-color: #37373d; }")
         self.obj_combo.setEditable(False)
         for kid in KEY_IDS:
