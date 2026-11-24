@@ -65,6 +65,10 @@ class ChordRecorder(QPushButton):
     def __init__(self, parent=None):
         super().__init__("● rec", parent)
         self.armed = False
+        # own rule so the page's cascade doesn't flatten the button
+        self.setStyleSheet("background: #2d2d30; border: 1px solid #3f3f46;"
+                           " border-radius: 4px; padding: 5px 8px;"
+                           " color: #d4d4d4;")
 
     def mousePressEvent(self, e):
         if not self.armed:
@@ -103,10 +107,14 @@ class ValueStack(QStackedWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("vstack")
-        self.setStyleSheet("QStackedWidget#vstack { background: transparent; }")
+        # bare own-rule covers every page; children that need a different
+        # color (the rec button) carry their own rule
+        self.setStyleSheet("background: #252526;")
         keys_page = QWidget()
         keys_page.setObjectName("keyspage")
-        keys_page.setStyleSheet("#keyspage { background: transparent; }")
+        # bare own-rule: beats the global QWidget bg rule (id selectors lose
+        # across stylesheet boundaries in Qt's cascade)
+        keys_page.setStyleSheet("background: #252526;")
         kl = QHBoxLayout(keys_page)
         kl.setContentsMargins(0, 0, 0, 0)
         kl.setSpacing(4)
