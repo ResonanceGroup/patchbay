@@ -351,6 +351,8 @@ QTreeWidget#propgrid QComboBox[open="true"]::down-arrow {
 QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
 QTreeWidget#propgrid QComboBox QAbstractItemView { background: #2d2d30;
     border: 1px solid #3f3f46; selection-background-color: #3399ff; }
+QTreeWidget#propgrid QScrollBar:vertical {
+    background: #1e1e1e; width: 24px; margin: 0; }
 """
 # absolute paths to the arrow assets (QSS url() is cwd-relative otherwise);
 # replace the compound placeholders first — they contain _ARROW_PNG_ as a
