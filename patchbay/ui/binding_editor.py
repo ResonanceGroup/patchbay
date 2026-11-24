@@ -12,7 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import QPoint, Qt, QRect, QSize, Signal
-from PySide6.QtGui import QColor, QFont, QPen
+from PySide6.QtGui import QColor, QFont, QPen, QPalette
 from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QFrame,
                                QHBoxLayout, QHeaderView, QLabel, QLineEdit,
                                QPushButton, QStackedWidget, QStyledItemDelegate,
@@ -102,6 +102,31 @@ class ChordRecorder(QPushButton):
         self.captured.emit(chord)
 
 
+class GridComboBox(QComboBox):
+    """Combo whose popup opens below the box and has no white container bands."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        v = self.view()
+        pal = v.palette()
+        pal.setColor(QPalette.ColorRole.Window, QColor("#2d2d30"))
+        pal.setColor(QPalette.ColorRole.Base, QColor("#2d2d30"))
+        v.setPalette(pal)
+
+    def showPopup(self):
+        super().showPopup()
+        v = self.view()
+        h = v.size().height()
+        below = self.mapToGlobal(QPoint(0, self.height()))
+        screen = self.screen().geometry()
+        if below.y() + h > screen.bottom():
+            # flip above the box, never covering it
+            v.setGeometry(QRect(below + QPoint(0, -self.height() - h),
+                                v.size()))
+        else:
+            v.setGeometry(QRect(below, v.size()))
+
+
 class ValueStack(QStackedWidget):
     """Editor for an action's value; pages match TYPE_NAMES order."""
     chord_captured = Signal(list)
@@ -120,7 +145,7 @@ class ValueStack(QStackedWidget):
         # across stylesheet boundaries in Qt's cascade)
         keys_page.setStyleSheet("background: #252526;")
         kl = QHBoxLayout(keys_page)
-        kl.setContentsMargins(0, 0, 6, 0)
+        kl.setContentsMargins(0, 0, 3, 0)
         kl.setSpacing(4)
         self.chords = QLabel("")
         self.chords.setStyleSheet(f"color: {DIM}; font-family: '{MONO}';"
@@ -134,7 +159,7 @@ class ValueStack(QStackedWidget):
         self.text_edit.setMinimumHeight(26)
         self.text_edit.setPlaceholderText("text to type")
         self.addWidget(self.text_edit)
-        self.media_combo = QComboBox()
+        self.media_combo = GridComboBox()
         self.media_combo.setMinimumHeight(26)
         for k in MediaAction.MEDIA_KEYS:
             self.media_combo.addItem(k.replace("_", " "), k)
@@ -312,7 +337,7 @@ class BindingEditor(QFrame):
         lay.addLayout(tb)
 
         # object header combo
-        self.obj_combo = QComboBox()
+        self.obj_combo = GridComboBox()
         self.obj_combo.setObjectName("objheader")
         self.obj_combo.setStyleSheet(
             "QComboBox#objheader { background: #2d2d30; border: 1px solid "
@@ -381,7 +406,7 @@ class BindingEditor(QFrame):
 
     # ---- action editor wiring ----
     def _add_action(self, cat, action, setv):
-        combo = QComboBox()
+        combo = GridComboBox()
         combo.setMinimumHeight(26)
         for _, tname in TYPE_NAMES:
             combo.addItem(tname)
