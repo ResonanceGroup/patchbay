@@ -35,17 +35,15 @@ class GripperHandle(QSplitterHandle):
             p.setPen(Qt.PenStyle.NoPen)
             cx, cy = self.width() // 2, self.height() // 2
             if self.orientation() == Qt.Orientation.Vertical:
-                for dy in (-8, 0, 8):
-                    p.setBrush(QColor("#161616"))
-                    p.drawRoundedRect(cx - 18, cy + dy - 1, 36, 2, 1, 1)
-                    p.setBrush(QColor("#8a8a8a"))
-                    p.drawRoundedRect(cx - 18, cy + dy - 2, 36, 2, 1, 1)
+                p.setBrush(QColor("#161616"))
+                p.drawRoundedRect(cx - 18, cy - 1, 36, 2, 1, 1)
+                p.setBrush(QColor("#8a8a8a"))
+                p.drawRoundedRect(cx - 18, cy - 2, 36, 2, 1, 1)
             else:
-                for dx in (-8, 0, 8):
-                    p.setBrush(QColor("#161616"))
-                    p.drawRoundedRect(cx + dx - 1, cy - 18, 2, 36, 1, 1)
-                    p.setBrush(QColor("#8a8a8a"))
-                    p.drawRoundedRect(cx + dx - 2, cy - 18, 2, 36, 1, 1)
+                p.setBrush(QColor("#161616"))
+                p.drawRoundedRect(cx - 1, cy - 18, 2, 36, 1, 1)
+                p.setBrush(QColor("#8a8a8a"))
+                p.drawRoundedRect(cx - 2, cy - 18, 2, 36, 1, 1)
         finally:
             self._painting = False
 
