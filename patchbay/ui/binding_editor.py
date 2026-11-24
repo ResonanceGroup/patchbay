@@ -110,8 +110,10 @@ class ValueStack(QStackedWidget):
         super().__init__(parent)
         self.setObjectName("vstack")
         # bare own-rule covers every page; children that need a different
-        # color (the rec button) carry their own rule
-        self.setStyleSheet("background: #252526;")
+        # color (the rec button) carry their own rule. border-bottom on the
+        # stack spans the full cell, including under the rec button.
+        self.setStyleSheet("background: #252526;"
+                           " border-bottom: 1px solid #37373d;")
         keys_page = QWidget()
         keys_page.setObjectName("keyspage")
         # bare own-rule: beats the global QWidget bg rule (id selectors lose
@@ -122,8 +124,7 @@ class ValueStack(QStackedWidget):
         kl.setSpacing(4)
         self.chords = QLabel("")
         self.chords.setStyleSheet(f"color: {DIM}; font-family: '{MONO}';"
-                                  " padding-left: 6px;"
-                                  " border-bottom: 1px solid #37373d;")
+                                  " padding-left: 6px;")
         kl.addWidget(self.chords, 1)
         self.recorder = ChordRecorder()
         self.recorder.setFixedWidth(70)
@@ -139,12 +140,10 @@ class ValueStack(QStackedWidget):
             self.media_combo.addItem(k.replace("_", " "), k)
         self.addWidget(self.media_combo)
         macro_lbl = QLabel("editor coming soon")
-        macro_lbl.setStyleSheet(f"color: {FAINT}; padding-left: 6px;"
-                                " border-bottom: 1px solid #37373d;")
+        macro_lbl.setStyleSheet(f"color: {FAINT}; padding-left: 6px;")
         self.addWidget(macro_lbl)
         none_lbl = QLabel("unbound")
-        none_lbl.setStyleSheet(f"color: {FAINT}; padding-left: 6px;"
-                               " border-bottom: 1px solid #37373d;")
+        none_lbl.setStyleSheet(f"color: {FAINT}; padding-left: 6px;")
         self.addWidget(none_lbl)
         self.recorder.captured.connect(self.chord_captured)
 
@@ -201,7 +200,7 @@ QTreeWidget#propgrid QLineEdit, QTreeWidget#propgrid QComboBox {
     background: #252526; border: none; border-bottom: 1px solid #37373d;
     padding: 4px 6px; min-height: 18px; }
 QTreeWidget#propgrid QComboBox::drop-down { background: transparent;
-    border: none; width: 18px; }
+    border: none; width: 18px; margin-right: 6px; }
 QTreeWidget#propgrid QComboBox::down-arrow { image: url(_ARROW_PNG_);
     width: 12px; height: 8px; }
 QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
