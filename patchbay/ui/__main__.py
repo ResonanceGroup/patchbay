@@ -21,6 +21,8 @@ def main():
     args = ap.parse_args()
 
     app = QApplication(sys.argv)
+    app.setApplicationName("Patchbay")
+    app.setDesktopFileName("patchbay")
     w = MainWindow(Path(args.profiles))
     if args.size:
         ww, hh = map(int, args.size.lower().split("x"))
