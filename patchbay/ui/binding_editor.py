@@ -9,17 +9,17 @@ Anatomy (System.Windows.Forms.PropertyGrid):
 """
 from __future__ import annotations
 
-from PySide6.QtCore import QPoint, Qt, QRect, Signal
+from PySide6.QtCore import QPoint, Qt, QRect, QSize, Signal
 from PySide6.QtGui import QColor, QFont, QPen
 from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QFrame,
                                QHBoxLayout, QHeaderView, QLabel, QLineEdit,
                                QPushButton, QStackedWidget, QStyledItemDelegate,
-                               QToolButton, QTreeWidget, QTreeWidgetItem,
-                               QVBoxLayout, QWidget)
+                               QStyleOptionViewItem, QToolButton, QTreeWidget,
+                               QTreeWidgetItem, QVBoxLayout, QWidget)
 
 from ..core.actions import KeysAction, MediaAction, NoneAction, TextAction
 from ..core.profile import ENCODER_IDS, KEY_IDS
-from .theme import DIM, FAINT, MONO
+from .theme import DIM, FAINT, MONO, TEXT
 
 TYPE_NAMES = [("keys", "Keys"), ("text", "Text"), ("media", "Media"),
               ("macro", "Macro"), ("none", "None")]
@@ -135,14 +135,15 @@ class _GridDelegate(QStyledItemDelegate):
     """Draws the vertical column divider and KiCad-style chevron toggles."""
 
     def paint(self, p, opt, index):
-        is_cat = index.column() == 0 and index.data(Qt.UserRole) == "cat"
+        is_cat = index.sibling(index.row(), 0).data(Qt.UserRole) == "cat"
         if is_cat:
-            from PySide6.QtWidgets import QStyleOptionViewItem
-            opt2 = QStyleOptionViewItem(opt)
+            p.fillRect(opt.rect, QColor("#37373d"))
+        opt2 = QStyleOptionViewItem(opt)
+        if is_cat and index.column() == 0:
             opt2.rect.adjust(22, 0, 0, 0)
-            super().paint(p, opt2, index)
-        else:
-            super().paint(p, opt, index)
+        elif index.column() == 0:
+            opt2.rect.adjust(10, 0, 0, 0)
+        super().paint(p, opt2, index)
         r = opt.rect
         if index.column() != 0:
             return
@@ -165,7 +166,7 @@ class _GridDelegate(QStyledItemDelegate):
 GRID_QSS = """
 QTreeWidget#propgrid { background: #252526; border: 1px solid #3f3f46;
     outline: 0; font-size: 14px; }
-QTreeWidget#propgrid::item { border-bottom: 1px solid #333336; padding: 8px 4px; }
+QTreeWidget#propgrid::item { border-bottom: 1px solid #333336; padding: 0; }
 QTreeWidget#propgrid QLineEdit { padding: 4px 6px; min-height: 18px; }
 QTreeWidget#propgrid QComboBox { padding: 3px 4px; min-height: 18px; }
 """
@@ -203,6 +204,9 @@ class PropertyGrid(QTreeWidget):
         f.setBold(True)
         it.setFont(0, f)
         it.setData(0, Qt.UserRole, "cat")
+        it.setBackground(0, QColor("#37373d"))
+        it.setBackground(1, QColor("#37373d"))
+        it.setSizeHint(0, QSize(0, 34))
         self.addTopLevelItem(it)
         it.setExpanded(True)
         self._sync_cat_state(it)
@@ -219,6 +223,7 @@ class PropertyGrid(QTreeWidget):
         else:
             it = QTreeWidgetItem([name])
             cat.addChild(it)
+        it.setSizeHint(0, QSize(0, 34))
         it.setData(0, Qt.UserRole + 2, desc)
         self.setItemWidget(it, 1, widget)
         return it
@@ -243,9 +248,18 @@ class BindingEditor(QFrame):
         lay.setContentsMargins(10, 8, 10, 8)
         lay.setSpacing(6)
 
-        # panel title strip (KiCad-style)
-        ptitle = QLabel("Properties")
-        ptitle.setStyleSheet(f"color: {DIM}; font-size: 12px;")
+        # panel title strip (KiCad-style gray bar)
+        ptitle = QFrame()
+        ptitle.setObjectName("titlebar")
+        ptitle.setStyleSheet(
+            "QFrame#titlebar { background: #2d2d30; border: 1px solid "
+            "#3f3f46; border-radius: 4px; }")
+        tl = QHBoxLayout(ptitle)
+        tl.setContentsMargins(8, 4, 8, 4)
+        pl = QLabel("Properties")
+        pl.setStyleSheet(f"color: {TEXT}; font-size: 13px; font-weight: 600;")
+        tl.addWidget(pl)
+        tl.addStretch(1)
         lay.addWidget(ptitle)
 
         # toolbar strip
