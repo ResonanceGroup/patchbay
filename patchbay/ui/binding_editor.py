@@ -137,11 +137,11 @@ class _GridDelegate(QStyledItemDelegate):
     def paint(self, p, opt, index):
         is_cat = index.sibling(index.row(), 0).data(Qt.UserRole) == "cat"
         r = opt.rect
-        p.fillRect(r, QColor("#45454b") if is_cat else QColor("#3c3c3c"))
+        p.fillRect(r, QColor("#45454b") if is_cat else QColor("#2d2d30"))
         text = index.data(Qt.DisplayRole) or ""
         p.setFont(opt.font)
         if index.column() == 0 and text:
-            off = 22 if is_cat else 16
+            off = 22 if is_cat else 6
             p.setPen(QColor("#e8e8e8") if is_cat else QColor("#d4d4d4"))
             p.drawText(r.adjusted(off, 0, -4, 0),
                        int(Qt.AlignVCenter | Qt.AlignLeft), text)
@@ -168,7 +168,7 @@ GRID_QSS = """
 QTreeWidget#propgrid { background: #1e1e1e; border: 1px solid #3f3f46;
     outline: 0; font-size: 14px; }
 QTreeWidget#propgrid QLineEdit, QTreeWidget#propgrid QComboBox {
-    background: #3c3c3c; border: none; padding: 4px 6px; min-height: 18px; }
+    background: #2d2d30; border: none; padding: 4px 6px; min-height: 18px; }
 QTreeWidget#propgrid QComboBox::drop-down { background: transparent;
     border: none; width: 18px; }
 QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
@@ -255,18 +255,9 @@ class BindingEditor(QFrame):
         lay.setContentsMargins(10, 8, 10, 8)
         lay.setSpacing(6)
 
-        # panel title strip (KiCad-style gray bar)
-        ptitle = QFrame()
-        ptitle.setObjectName("titlebar")
-        ptitle.setStyleSheet(
-            "QFrame#titlebar { background: #2d2d30; border: 1px solid "
-            "#3f3f46; border-radius: 4px; }")
-        tl = QHBoxLayout(ptitle)
-        tl.setContentsMargins(8, 4, 8, 4)
-        pl = QLabel("Properties")
-        pl.setStyleSheet(f"color: {TEXT}; font-size: 13px; font-weight: 600;")
-        tl.addWidget(pl)
-        tl.addStretch(1)
+        # panel title, same style as the Profiles heading
+        ptitle = QLabel("Properties")
+        ptitle.setStyleSheet("font-weight: 700; font-size: 14px;")
         lay.addWidget(ptitle)
 
         # toolbar strip
