@@ -11,10 +11,11 @@ from __future__ import annotations
 
 from PySide6.QtCore import QPoint, Qt, QRect, Signal
 from PySide6.QtGui import QColor, QFont, QPen
-from PySide6.QtWidgets import (QComboBox, QFrame, QHBoxLayout, QHeaderView,
-                               QLabel, QLineEdit, QPushButton, QStackedWidget,
-                               QStyledItemDelegate, QToolButton, QTreeWidget,
-                               QTreeWidgetItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QFrame,
+                               QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+                               QPushButton, QStackedWidget, QStyledItemDelegate,
+                               QToolButton, QTreeWidget, QTreeWidgetItem,
+                               QVBoxLayout, QWidget)
 
 from ..core.actions import KeysAction, MediaAction, NoneAction, TextAction
 from ..core.profile import ENCODER_IDS, KEY_IDS
@@ -162,13 +163,9 @@ class _GridDelegate(QStyledItemDelegate):
 
 
 GRID_QSS = """
-QTreeWidget#propgrid { background: #26262a; border: 1px solid #333336;
+QTreeWidget#propgrid { background: #252526; border: 1px solid #3f3f46;
     outline: 0; font-size: 14px; }
 QTreeWidget#propgrid::item { border-bottom: 1px solid #333336; padding: 8px 4px; }
-QTreeWidget#propgrid::item:selected { background: transparent; color: inherit; }
-QComboBox#objheader { background: transparent; border: none; font-size: 15px;
-    padding: 4px 2px; }
-QComboBox#objheader::drop-down { border: none; width: 18px; }
 QTreeWidget#propgrid QLineEdit { padding: 4px 6px; min-height: 18px; }
 QTreeWidget#propgrid QComboBox { padding: 3px 4px; min-height: 18px; }
 """
@@ -185,6 +182,7 @@ class PropertyGrid(QTreeWidget):
         self.setColumnCount(2)
         self.setRootIsDecorated(False)
         self.setIndentation(18)
+        self.setSelectionMode(QAbstractItemView.NoSelection)
         self.setItemDelegate(_GridDelegate())
         self.header().setStretchLastSection(True)
         self.setColumnWidth(0, 118)
@@ -269,6 +267,10 @@ class BindingEditor(QFrame):
         # object header combo
         self.obj_combo = QComboBox()
         self.obj_combo.setObjectName("objheader")
+        self.obj_combo.setStyleSheet(
+            "QComboBox#objheader { background: #2d2d30; border: 1px solid "
+            "#3f3f46; border-radius: 4px; font-size: 15px; padding: 5px 8px; }"
+            "QComboBox#objheader::drop-down { border: none; width: 18px; }")
         self.obj_combo.setEditable(False)
         for kid in KEY_IDS:
             self.obj_combo.addItem(kid, ("key", kid))
@@ -283,6 +285,9 @@ class BindingEditor(QFrame):
 
         # help/description panel
         self.help_panel = QFrame()
+        self.help_panel.setStyleSheet(
+            "QFrame#helppanel { border-top: 1px solid #333336; }")
+        self.help_panel.setObjectName("helppanel")
         hp = QVBoxLayout(self.help_panel)
         hp.setContentsMargins(6, 4, 6, 4)
         hp.setSpacing(1)
