@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QPoint, QTimer
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (QHBoxLayout, QLabel, QMainWindow,
                                QPushButton, QSplitter, QSplitterHandle,
@@ -18,20 +18,31 @@ from .theme import ACCENT_DEFAULT, QSS, PANEL, segmented_qss
 
 
 class GripperHandle(QSplitterHandle):
-    """Splitter handle with a small gripper dot-row in the center."""
+    """Splitter handle with a raised gripper line; highlights on hover."""
 
     def __init__(self, orientation, parent):
         super().__init__(orientation, parent)
         self._painting = False
+        self._hover = False
         self.setMouseTracking(True)
 
     def enterEvent(self, e):
+        self._hover = True
         self.update()
         super().enterEvent(e)
 
     def leaveEvent(self, e):
+        self._hover = False
         self.update()
         super().leaveEvent(e)
+
+    def mousePressEvent(self, e):
+        self._pressed = True
+        super().mousePressEvent(e)
+
+    def mouseReleaseEvent(self, e):
+        self._pressed = False
+        super().mouseReleaseEvent(e)
 
     def paintEvent(self, e):
         if self._painting:
@@ -43,19 +54,21 @@ class GripperHandle(QSplitterHandle):
             p.setRenderHint(QPainter.RenderHint.Antialiasing)
             p.setPen(Qt.PenStyle.NoPen)
             cx, cy = self.width() // 2, self.height() // 2
+            if self._hover:
+                p.setBrush(QColor("#2a2a2a"))
+                p.drawRoundedRect(2, 2, self.width() - 4, self.height() - 4,
+                                 3, 3)
             if self.orientation() == Qt.Orientation.Vertical:
                 p.setBrush(QColor("#161616"))
                 p.drawRoundedRect(cx - 18, cy - 1, 36, 2, 1, 1)
                 p.setBrush(QColor("#8a8a8a"))
                 p.drawRoundedRect(cx - 18, cy - 2, 36, 2, 1, 1)
             else:
+                # 2px bar centered on cx; 1px highlight on its left edge
                 p.setBrush(QColor("#161616"))
                 p.drawRoundedRect(cx - 1, cy - 18, 2, 36, 1, 1)
                 p.setBrush(QColor("#8a8a8a"))
-                p.drawRoundedRect(cx - 2, cy - 18, 2, 36, 1, 1)
-            if self.underMouse():
-                p.setBrush(QColor(255, 255, 255, 14))
-                p.fillRect(self.rect(), p.brush())
+                p.drawRoundedRect(cx - 1, cy - 18, 1, 36, 1, 1)
         finally:
             self._painting = False
 
@@ -68,25 +81,35 @@ class SnapSplitter(QSplitter):
         super().__init__(orientation, parent)
         self.setHandleWidth(12)
         self._snapped = None
+        self._dragging = False
 
     def createHandle(self):
         return GripperHandle(self.orientation(), self)
 
-    def _maybe_snap(self):
-        if len(self.sizes()) != 2:
-            return
+    def _extents(self):
         total = sum(self.sizes()) + self.handleWidth()
-        if total <= 0:
-            return
-        first = self.sizes()[0]
-        edge = int(total * 0.05)
         horiz = self.orientation() == Qt.Orientation.Horizontal
         w0 = self.widget(0)
+        w1 = self.widget(1)
+        if self.childrenCollapsible():
+            # panels may collapse to nothing, so the snap targets are the
+            # true ends of the splitter, not the content minimums
+            return total, 0, total - self.handleWidth()
         lo = (w0.minimumSizeHint().width() if horiz
               else w0.minimumSizeHint().height())
         hi = (total - self.handleWidth() -
-              (self.widget(1).minimumSizeHint().width() if horiz
-               else self.widget(1).minimumSizeHint().height()))
+              (w1.minimumSizeHint().width() if horiz
+               else w1.minimumSizeHint().height()))
+        return total, lo, hi
+
+    def _maybe_snap(self):
+        if len(self.sizes()) != 2:
+            return
+        total, lo, hi = self._extents()
+        if total <= 0 or hi <= lo:
+            return
+        first = self.sizes()[0]
+        edge = int(total * 0.05)
         target = None
         if first - lo <= edge:
             target = 0
@@ -99,6 +122,35 @@ class SnapSplitter(QSplitter):
             self.setSizes([lo, total - lo - self.handleWidth()])
         elif target == 1:
             self.setSizes([hi, total - hi - self.handleWidth()])
+
+    def _start_drag(self):
+        """Begin a synthetic drag from the handle's current position."""
+        h = self.handle(1)
+        if h is None:
+            return
+        self._drag_pos = h.pos()
+        self._dragging = True
+        self._snapped = None
+
+    def _step_drag(self, dx, dy):
+        if not self._dragging:
+            return
+        self._drag_pos += QPoint(dx, dy)
+        self.setSizes(self._sizes_for(self._drag_pos))
+        self._maybe_snap()
+
+    def _sizes_for(self, pos):
+        total = sum(self.sizes()) + self.handleWidth()
+        horiz = self.orientation() == Qt.Orientation.Horizontal
+        first = (pos.x() if horiz else pos.y())
+        first = max(0, min(total - self.handleWidth(), first))
+        return [first, total - first - self.handleWidth()]
+
+    def _end_drag(self):
+        if not self._dragging:
+            return
+        self._dragging = False
+        self._snapped = None
 
     def event(self, e):
         from PySide6.QtCore import QEvent
@@ -193,9 +245,9 @@ class MainWindow(QMainWindow):
         self.body_split.addWidget(kp_host)
         self.body_split.setStretchFactor(0, 0)
         self.body_split.setStretchFactor(1, 1)
-        self.body_split.setCollapsible(0, False)
-        self.body_split.setCollapsible(1, False)
-        self.body_split.setChildrenCollapsible(False)
+        self.body_split.setCollapsible(0, True)
+        self.body_split.setCollapsible(1, True)
+        self.body_split.setChildrenCollapsible(True)
         self.body_split.setSizes([340, 700])
         body.addWidget(self.body_split, 1)
         root.addLayout(body, 1)

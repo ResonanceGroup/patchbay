@@ -149,11 +149,14 @@ class WinScrollBar(QScrollBar):
         p.drawPolygon(QPolygon([QPoint(cx - 6, bot.y() + 8),
                                 QPoint(cx + 6, bot.y() + 8),
                                 QPoint(cx, bot.y() + 14)]))
-        p.setBrush(QColor("#565660"))
-        p.drawRect(handle)
-        p.setPen(QPen(QColor("#6e6e78")))
-        p.setBrush(Qt.BrushStyle.NoBrush)
-        p.drawRect(handle.adjusted(0, 0, -1, -1))
+        # when there is nothing to scroll, the thumb would fill the whole
+        # track — hide just the thumb, keep the track and arrow buttons.
+        if self.maximum() > self.minimum():
+            p.setBrush(QColor("#565660"))
+            p.drawRect(handle)
+            p.setPen(QPen(QColor("#6e6e78")))
+            p.setBrush(Qt.BrushStyle.NoBrush)
+            p.drawRect(handle.adjusted(0, 0, -1, -1))
         p.setPen(QPen(QColor("#1e1e1e")))
         p.drawLine(0, self.BTN - 1, self.width(), self.BTN - 1)
         p.drawLine(0, self.height() - self.BTN,
