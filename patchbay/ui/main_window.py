@@ -59,16 +59,16 @@ class GripperHandle(QSplitterHandle):
                 p.drawRoundedRect(2, 2, self.width() - 4, self.height() - 4,
                                  3, 3)
             if self.orientation() == Qt.Orientation.Vertical:
+                # 2px bar centered on cy; 1px highlight on its top edge
                 p.setBrush(QColor("#161616"))
                 p.drawRoundedRect(cx - 18, cy - 1, 36, 2, 1, 1)
                 p.setBrush(QColor("#8a8a8a"))
-                p.drawRoundedRect(cx - 18, cy - 2, 36, 2, 1, 1)
+                p.drawRoundedRect(cx - 18, cy - 1, 36, 1, 1, 1)
             else:
-                # 2px bar centered on cx; 1px highlight on its left edge
                 p.setBrush(QColor("#161616"))
                 p.drawRoundedRect(cx - 1, cy - 18, 2, 36, 1, 1)
                 p.setBrush(QColor("#8a8a8a"))
-                p.drawRoundedRect(cx - 1, cy - 18, 1, 36, 1, 1)
+                p.drawRoundedRect(cx - 2, cy - 18, 2, 36, 1, 1)
         finally:
             self._painting = False
 
@@ -218,9 +218,9 @@ class MainWindow(QMainWindow):
         self.left_split.addWidget(self.editor)
         self.left_split.setStretchFactor(0, 0)
         self.left_split.setStretchFactor(1, 1)
-        self.left_split.setCollapsible(0, False)
-        self.left_split.setCollapsible(1, False)
-        self.left_split.setChildrenCollapsible(False)
+        self.left_split.setCollapsible(0, True)
+        self.left_split.setCollapsible(1, True)
+        self.left_split.setChildrenCollapsible(True)
         self.left_split.setSizes([220, 480])
         left_lay.addWidget(self.left_split, 1)
         left_w.setMinimumWidth(240)
@@ -245,9 +245,9 @@ class MainWindow(QMainWindow):
         self.body_split.addWidget(kp_host)
         self.body_split.setStretchFactor(0, 0)
         self.body_split.setStretchFactor(1, 1)
-        self.body_split.setCollapsible(0, True)
-        self.body_split.setCollapsible(1, True)
-        self.body_split.setChildrenCollapsible(True)
+        self.body_split.setCollapsible(0, False)
+        self.body_split.setCollapsible(1, False)
+        self.body_split.setChildrenCollapsible(False)
         self.body_split.setSizes([340, 700])
         body.addWidget(self.body_split, 1)
         root.addLayout(body, 1)
