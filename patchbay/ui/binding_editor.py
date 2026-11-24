@@ -9,6 +9,8 @@ Anatomy (System.Windows.Forms.PropertyGrid):
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 from PySide6.QtCore import QPoint, Qt, QRect, QSize, Signal
 from PySide6.QtGui import QColor, QFont, QPen
 from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QFrame,
@@ -119,7 +121,9 @@ class ValueStack(QStackedWidget):
         kl.setContentsMargins(0, 0, 0, 0)
         kl.setSpacing(4)
         self.chords = QLabel("")
-        self.chords.setStyleSheet(f"color: {DIM}; font-family: '{MONO}';")
+        self.chords.setStyleSheet(f"color: {DIM}; font-family: '{MONO}';"
+                                  " padding-left: 6px;"
+                                  " border-bottom: 1px solid #37373d;")
         kl.addWidget(self.chords, 1)
         self.recorder = ChordRecorder()
         self.recorder.setFixedWidth(70)
@@ -135,10 +139,12 @@ class ValueStack(QStackedWidget):
             self.media_combo.addItem(k.replace("_", " "), k)
         self.addWidget(self.media_combo)
         macro_lbl = QLabel("editor coming soon")
-        macro_lbl.setStyleSheet(f"color: {FAINT};")
+        macro_lbl.setStyleSheet(f"color: {FAINT}; padding-left: 6px;"
+                                " border-bottom: 1px solid #37373d;")
         self.addWidget(macro_lbl)
         none_lbl = QLabel("unbound")
-        none_lbl.setStyleSheet(f"color: {FAINT};")
+        none_lbl.setStyleSheet(f"color: {FAINT}; padding-left: 6px;"
+                               " border-bottom: 1px solid #37373d;")
         self.addWidget(none_lbl)
         self.recorder.captured.connect(self.chord_captured)
 
@@ -196,10 +202,15 @@ QTreeWidget#propgrid QLineEdit, QTreeWidget#propgrid QComboBox {
     padding: 4px 6px; min-height: 18px; }
 QTreeWidget#propgrid QComboBox::drop-down { background: transparent;
     border: none; width: 18px; }
+QTreeWidget#propgrid QComboBox::down-arrow { image: url(_ARROW_PNG_);
+    width: 12px; height: 8px; }
 QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
 QTreeWidget#propgrid QComboBox QAbstractItemView { background: #2d2d30;
     border: 1px solid #3f3f46; selection-background-color: #3399ff; }
 """
+# absolute path to the arrow asset (QSS url() is cwd-relative otherwise)
+GRID_QSS = GRID_QSS.replace(
+    "_ARROW_PNG_", str(Path(__file__).parent / "assets" / "down_arrow.png"))
 
 
 class PropertyGrid(QTreeWidget):
