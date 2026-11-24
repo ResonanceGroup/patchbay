@@ -152,12 +152,9 @@ class _GridDelegate(QStyledItemDelegate):
             p.setPen(QColor("#e8e8e8") if is_cat else QColor("#d4d4d4"))
             p.drawText(r.adjusted(off, 0, -4, 0),
                        int(Qt.AlignVCenter | Qt.AlignLeft), text)
-        p.setPen(QPen(QColor("#4a4a52")))
-        p.drawLine(r.bottomLeft(), r.bottomRight())
-        if index.column() != 0:
-            return
-        p.drawLine(r.topRight(), r.bottomRight())
         if is_cat:
+            if index.column() != 0:
+                return
             cx, cy = r.left() + 10, r.center().y()
             pen = QPen(QColor("#c8c8c8"))
             pen.setWidthF(1.6)
@@ -169,13 +166,22 @@ class _GridDelegate(QStyledItemDelegate):
             else:  # collapsed: right chevron
                 p.drawPolyline([QPoint(cx - 2, cy - 4), QPoint(cx + 2, cy),
                                 QPoint(cx - 2, cy + 4)])
+            return
+        p.setPen(QPen(QColor("#4a4a52")))
+        if index.column() == 0:
+            # row line starts after the gutter; gutter itself stays clean
+            p.drawLine(QPoint(r.left() + 22, r.bottom()), r.bottomRight())
+            p.drawLine(r.topRight(), r.bottomRight())
+        else:
+            p.drawLine(r.bottomLeft(), r.bottomRight())
 
 
 GRID_QSS = """
 QTreeWidget#propgrid { background: #252526; border: 1px solid #3f3f46;
     outline: 0; font-size: 14px; }
 QTreeWidget#propgrid QLineEdit, QTreeWidget#propgrid QComboBox {
-    background: #252526; border: none; padding: 4px 6px; min-height: 18px; }
+    background: #252526; border: none; border-bottom: 1px solid #4a4a52;
+    padding: 4px 6px; min-height: 18px; }
 QTreeWidget#propgrid QComboBox::drop-down { background: transparent;
     border: none; width: 18px; }
 QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
@@ -194,7 +200,7 @@ class PropertyGrid(QTreeWidget):
         self.setHeaderHidden(True)
         self.setColumnCount(2)
         self.setRootIsDecorated(False)
-        self.setIndentation(8)
+        self.setIndentation(0)
         self.setSelectionMode(QAbstractItemView.NoSelection)
         self.setItemDelegate(_GridDelegate())
         self.header().setStretchLastSection(True)
