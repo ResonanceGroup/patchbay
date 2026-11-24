@@ -61,9 +61,15 @@ class MainWindow(QMainWindow):
         body = QHBoxLayout()
         body.setSpacing(14)
         self.keypad = KeypadWidget()
+        self.keypad.setMaximumWidth(560)
         self.keypad.selected.connect(self._selected)
         self.keypad.layer_cycle.connect(self._layer_changed)
-        body.addWidget(self.keypad, 3)
+        kp_host = QHBoxLayout()
+        kp_host.setContentsMargins(0, 0, 0, 0)
+        kp_host.addStretch(1)
+        kp_host.addWidget(self.keypad)
+        kp_host.addStretch(1)
+        body.addLayout(kp_host, 3)
 
         self.editor = BindingEditor(self.accent())
         self.editor.setFixedWidth(340)
@@ -73,7 +79,7 @@ class MainWindow(QMainWindow):
 
         # ---- status ----
         self.status = QLabel("")
-        self.status.setObjectName("faint")
+        self.status.setObjectName("statusbar")
         root.addWidget(self.status)
 
         if self.profile:
@@ -83,6 +89,7 @@ class MainWindow(QMainWindow):
         return self.profile.accent if self.profile else ACCENT_DEFAULT
 
     def _load_profile(self):
+        self.keypad.set_accent(self.accent())
         self.keypad.set_profile(self.profile, self.layer_idx)
         self.editor.set_accent(self.accent())
         for b in self.layer_btns:
@@ -100,7 +107,7 @@ class MainWindow(QMainWindow):
         for i, b in enumerate(self.layer_btns):
             b.setChecked(i == idx)
         self.keypad.layer_idx = idx
-        self.keypad.update()
+        self.keypad.refresh()
         self._reedit()
 
     def _selected(self, kind, ident):
@@ -117,7 +124,7 @@ class MainWindow(QMainWindow):
     def _binding_changed(self):
         binding = self.editor._binding_ref
         binding.label = self.editor.current_label()
-        self.keypad.update()
+        self.keypad.refresh()
         self._save()
 
     def _save(self):

@@ -1,37 +1,39 @@
-"""Dark theme tokens + QSS. Accent comes from the active profile."""
+"""Dark theme tokens + QSS — VS Code Dark+ palette. Accent comes from the active profile."""
 
-BG = "#0f141c"
-PANEL = "#151d29"
-CARD = "#1b2432"
-KEY = "#232e40"
-KEY_TOP = "#2a3750"
-BORDER = "#2c3950"
-TEXT = "#e6edf6"
-DIM = "#93a7c4"
-FAINT = "#5d6f8c"
-ACCENT_DEFAULT = "#4a8fd4"
+# VS Code Dark+
+BG = "#1e1e1e"
+PANEL = "#252526"
+CARD = "#2d2d30"
+KEY = "#2d2d30"
+KEY_HOVER = "#38383c"
+KEY_SEL = "#33333a"
+BORDER = "#3f3f46"
+TEXT = "#d4d4d4"
+DIM = "#9d9d9d"
+FAINT = "#6e6e6e"
+ACCENT_DEFAULT = "#007acc"
+STATUS_BG = "#007acc"
 
-MONO = "DejaVu Sans Mono"
+MONO = "Consolas, DejaVu Sans Mono"
 
 QSS = f"""
 QMainWindow, QWidget {{ background: {BG}; color: {TEXT};
     font-family: 'Segoe UI', 'DejaVu Sans', sans-serif; font-size: 14px; }}
-QFrame#panel {{ background: {PANEL}; border: 1px solid {BORDER}; border-radius: 10px; }}
-QFrame#card {{ background: {CARD}; border: 1px solid {BORDER}; border-radius: 8px; }}
+QFrame#panel {{ background: {PANEL}; border: 1px solid {BORDER}; border-radius: 8px; }}
 QLabel#brand {{ font-size: 19px; font-weight: 700; }}
 QLabel#dim {{ color: {DIM}; }}
 QLabel#faint {{ color: {FAINT}; }}
-QLabel#mono {{ font-family: '{MONO}'; }}
+QLabel#statusbar {{ background: {STATUS_BG}; color: #ffffff; padding: 4px 12px;
+    border-radius: 4px; }}
 QComboBox, QLineEdit, QPlainTextEdit {{
-    background: {CARD}; border: 1px solid {BORDER}; border-radius: 6px;
+    background: {CARD}; border: 1px solid {BORDER}; border-radius: 4px;
     padding: 6px 8px; color: {TEXT}; selection-background-color: {ACCENT_DEFAULT}; }}
 QComboBox::drop-down {{ border: none; width: 22px; }}
 QComboBox QAbstractItemView {{ background: {CARD}; border: 1px solid {BORDER};
-    selection-background-color: {KEY_TOP}; }}
-QPushButton {{ background: {CARD}; border: 1px solid {BORDER}; border-radius: 6px;
+    selection-background-color: #37373d; }}
+QPushButton {{ background: {CARD}; border: 1px solid {BORDER}; border-radius: 4px;
     padding: 7px 14px; color: {TEXT}; }}
-QPushButton:hover {{ background: {KEY_TOP}; }}
-QPushButton:checkable {{ border: 1px solid {BORDER}; }}
+QPushButton:hover {{ background: {KEY_HOVER}; }}
 QStatusBar {{ background: {PANEL}; color: {DIM}; }}
 """
 
@@ -39,7 +41,18 @@ QStatusBar {{ background: {PANEL}; color: {DIM}; }}
 def segmented_qss(accent: str) -> str:
     return f"""
     QPushButton {{ background: {CARD}; border: 1px solid {BORDER};
-        padding: 6px 14px; color: {DIM}; border-radius: 6px; }}
-    QPushButton:checked {{ background: {KEY_TOP}; color: {TEXT};
+        padding: 6px 14px; color: {DIM}; border-radius: 4px; }}
+    QPushButton:hover {{ background: {KEY_HOVER}; }}
+    QPushButton:checked {{ background: {KEY_SEL}; color: #ffffff;
         border: 1px solid {accent}; }}
+    """
+
+
+def key_qss(accent: str) -> str:
+    return f"""
+    QPushButton {{ background: {KEY}; border: 1px solid {BORDER};
+        border-radius: 8px; color: {TEXT}; }}
+    QPushButton:hover {{ background: {KEY_HOVER}; border-color: #5a5a5f; }}
+    QPushButton:checked {{ background: {KEY_SEL};
+        border: 2px solid {accent}; }}
     """

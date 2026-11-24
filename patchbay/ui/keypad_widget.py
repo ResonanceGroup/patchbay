@@ -1,247 +1,238 @@
-"""Interactive replica of the pad. The centerpiece of the editor."""
+"""Interactive replica of the pad, built from real buttons.
+
+Portrait layout matching the hardware: two encoders on top, 3x4 key grid,
+layer button + LEDs to the right of the top row.
+"""
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, QRectF, QPointF, Signal
 from PySide6.QtGui import (QBrush, QColor, QFont, QLinearGradient, QPainter,
                            QPainterPath, QPen)
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import (QGridLayout, QLabel, QPushButton, QVBoxLayout,
+                               QWidget)
 
 from ..core.profile import ENCODER_IDS, KEY_IDS
-from .theme import BORDER, DIM, FAINT, KEY, KEY_TOP, PANEL, TEXT
+from .theme import BORDER, DIM, FAINT, KEY_HOVER, PANEL, TEXT, key_qss
 
 
-class KeypadWidget(QWidget):
-    selected = Signal(str, str)  # kind ("key"|"encoder"), id
-    layer_cycle = Signal(int)
+class KnobRow(QWidget):
+    """Two painted encoder knobs with labels; clickable."""
+    selected = Signal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.profile = None
         self.layer_idx = 0
-        self.sel: tuple[str, str] | None = None
-        self.accent = "#4a8fd4"
-        self._key_rects: dict[str, QRectF] = {}
+        self.sel_id: str | None = None
+        self.accent = "#007acc"
         self._knob_rects: dict[str, QRectF] = {}
-        self.setMinimumSize(560, 520)
-        self.setMouseTracking(True)
-        self._hover: tuple[str, str] | None = None
+        self.setMinimumHeight(200)
 
-    def set_profile(self, profile, layer_idx: int):
-        self.profile = profile
-        self.layer_idx = layer_idx
-        self.accent = profile.accent
-        self.update()
-
-    def select(self, kind: str, ident: str):
-        self.sel = (kind, ident)
-        self.update()
-
-    # ---------- layout ----------
-    def _layout(self):
-        w, h = self.width(), self.height()
-        margin = 26
-        # case aspect ~ 520:490 from the line diagram
-        cw = min(w - 2 * margin, (h - 2 * margin) * 520 / 490)
-        ch = cw * 490 / 520
-        x0 = (w - cw) / 2
-        y0 = (h - ch) / 2
-        self._case = QRectF(x0, y0, cw, ch)
-        self._key_rects.clear()
-        self._knob_rects.clear()
-
-        # knobs
-        kr = cw * 0.085
-        kcy = y0 + ch * 0.20
-        for i, eid in enumerate(ENCODER_IDS):
-            kcx = x0 + cw * (0.32 + 0.36 * i)
-            self._knob_rects[eid] = QRectF(kcx - kr, kcy - kr, 2 * kr, 2 * kr)
-
-        # key grid 3 x 4, centered
-        cell = cw * 0.20
-        kh = cell * 0.78
-        gw = 2 * cell + kh
-        gx = x0 + (cw - gw) / 2
-        gy = y0 + ch * 0.42
-        pitch_y = (ch * 0.50) / 4
-        for idx, kid in enumerate(KEY_IDS):
-            r, c = divmod(idx, 3)
-            kx = gx + c * cell
-            ky = gy + r * pitch_y
-            self._key_rects[kid] = QRectF(kx, ky, kh, kh * 0.78)
-
-        # hardware layer button + LEDs, right of the grid
-        lbw, lbh = cw * 0.11, cw * 0.07
-        self._layer_btn = QRectF(gx + gw + cw * 0.045, gy + kh * 0.10, lbw, lbh)
-        self._leds = [QRectF(self._layer_btn.x() + i * lbw * 0.42 - 4,
-                             self._layer_btn.bottom() + 14, 8, 8) for i in range(3)]
-
-    # ---------- paint ----------
     def paintEvent(self, _):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
-        self._layout()
-
-        # case
-        path = QPainterPath()
-        path.addRoundedRect(self._case, 22, 22)
-        p.fillPath(path, QColor(PANEL))
-        p.setPen(QPen(QColor(BORDER), 1.5))
-        p.drawPath(path)
-
-        layer = self.profile.layer(self.layer_idx) if self.profile else None
-
-        # knobs
-        for eid, rect in self._knob_rects.items():
-            self._paint_knob(p, eid, rect, layer)
-
-        # keys
-        for kid, rect in self._key_rects.items():
-            self._paint_key(p, kid, rect, layer)
-
-        # layer button + LEDs
-        self._paint_layer_btn(p)
-
+        w, h = self.width(), self.height()
+        kr = min(w, h) * 0.17
+        kcy = h * 0.40
+        self._knob_rects.clear()
+        for i, eid in enumerate(ENCODER_IDS):
+            kcx = w * (0.32 + 0.36 * i)
+            rect = QRectF(kcx - kr, kcy - kr, 2 * kr, 2 * kr)
+            self._knob_rects[eid] = rect
+            self._paint_knob(p, eid, rect)
         p.end()
 
-    def _paint_layer_btn(self, p: QPainter):
-        r = self._layer_btn
-        path = QPainterPath()
-        path.addRoundedRect(r, 7, 7)
-        p.fillPath(path, QColor(KEY))
-        p.setPen(QPen(QColor(BORDER), 1))
-        p.drawPath(path)
-        f = QFont(self.font())
-        f.setPointSizeF(9)
-        p.setFont(f)
-        p.setPen(QColor(DIM))
-        p.drawText(r, Qt.AlignCenter, "layer")
-        for i, lr in enumerate(self._leds):
-            on = i == self.layer_idx
-            p.setPen(Qt.NoPen)
-            p.setBrush(QColor(self.accent if on else "#2a3750"))
-            p.drawEllipse(lr.center(), lr.width() / 2 * (1.4 if on else 1.0),
-                          lr.width() / 2 * (1.4 if on else 1.0))
-            if on:
-                p.setBrush(QColor(self.accent))
-                p.setOpacity(0.25)
-                p.drawEllipse(lr.center(), lr.width() * 1.4, lr.width() * 1.4)
-                p.setOpacity(1.0)
-
-    def _paint_key(self, p: QPainter, kid: str, rect: QRectF, layer):
-        is_sel = self.sel == ("key", kid)
-        is_hover = self._hover == ("key", kid)
-        path = QPainterPath()
-        path.addRoundedRect(rect, 10, 10)
-
-        grad = QLinearGradient(rect.topLeft(), rect.bottomLeft())
-        grad.setColorAt(0, QColor(KEY_TOP if (is_sel or is_hover) else KEY))
-        grad.setColorAt(1, QColor(KEY))
-        p.fillPath(path, QBrush(grad))
-
-        if is_sel:
-            p.setPen(QPen(QColor(self.accent), 2.5))
-        else:
-            p.setPen(QPen(QColor(BORDER), 1))
-        p.drawPath(path)
-
-        binding = layer.binding(kid) if layer else None
-        label = binding.display_label() if binding else ""
-        action = binding.action if binding else None
-
-        cx, cy = rect.center().x(), rect.center().y()
-        if label:
-            f = QFont(self.font())
-            f.setPointSizeF(max(9.5, rect.height() * 0.16))
-            f.setBold(True)
-            p.setFont(f)
-            p.setPen(QColor(TEXT))
-            combo = action.summary() if action and action.summary() != label else ""
-            ty = cy - (6 if combo else -5)
-            p.drawText(QRectF(rect.left(), ty - rect.height() * 0.3, rect.width(), rect.height() * 0.36),
-                       Qt.AlignHCenter | Qt.AlignBottom, label)
-            if combo:
-                fm = QFont("DejaVu Sans Mono")
-                fm.setPointSizeF(max(7.5, rect.height() * 0.12))
-                p.setFont(fm)
-                p.setPen(QColor(DIM))
-                p.drawText(QRectF(rect.left(), ty + 2, rect.width(), rect.height() * 0.26),
-                           Qt.AlignHCenter | Qt.AlignTop, combo)
-        else:
-            p.setPen(QColor(FAINT))
-            f = QFont(self.font())
-            f.setPointSizeF(max(8, rect.height() * 0.13))
-            p.setFont(f)
-            p.drawText(rect, Qt.AlignCenter, "—")
-
-        # key id, top-left
-        fi = QFont(self.font())
-        fi.setPointSizeF(max(6.5, rect.height() * 0.10))
-        p.setFont(fi)
-        p.setPen(QColor(FAINT))
-        p.drawText(QRectF(rect.left() + 6, rect.top() + 3, 40, 14),
-                   Qt.AlignLeft | Qt.AlignTop, kid)
-
-    def _paint_knob(self, p: QPainter, eid: str, rect: QRectF, layer):
-        is_sel = self.sel == ("encoder", eid)
+    def _paint_knob(self, p: QPainter, eid: str, rect: QRectF):
         c = rect.center()
         r = rect.width() / 2
-        if is_sel:
+        if self.sel_id == eid:
             p.setPen(QPen(QColor(self.accent), 2.5))
         else:
             p.setPen(QPen(QColor(BORDER), 1.5))
         grad = QLinearGradient(rect.topLeft(), rect.bottomLeft())
-        grad.setColorAt(0, QColor(KEY_TOP))
-        grad.setColorAt(1, QColor(KEY))
+        grad.setColorAt(0, QColor(KEY_HOVER))
+        grad.setColorAt(1, QColor("#26262a"))
         p.setBrush(QBrush(grad))
         p.drawEllipse(c, r, r)
         p.setPen(QPen(QColor(BORDER), 1))
         p.drawEllipse(c, r * 0.72, r * 0.72)
-        # indicator
         pen = QPen(QColor(TEXT), 3)
         pen.setCapStyle(Qt.RoundCap)
         p.setPen(pen)
         p.drawLine(QPointF(c.x(), c.y() - r * 0.62), QPointF(c.x(), c.y() - r * 0.30))
 
-        binding = layer.encoder(eid) if layer else None
+        binding = None
+        if self.profile:
+            binding = self.profile.layer(self.layer_idx).encoder(eid)
         label = (binding.display_label() if binding else "") or eid
         f = QFont(self.font())
         f.setPointSizeF(12)
         f.setBold(True)
         p.setFont(f)
         p.setPen(QColor(TEXT if binding else FAINT))
-        p.drawText(QRectF(c.x() - r - 20, rect.bottom() + 6, 2 * r + 40, 20),
+        p.drawText(QRectF(c.x() - r - 30, rect.bottom() + 8, 2 * r + 60, 20),
                    Qt.AlignHCenter, label)
-        if binding and binding.cw:
+        if binding and (binding.cw or binding.ccw):
             fm = QFont("DejaVu Sans Mono")
             fm.setPointSizeF(8.5)
             p.setFont(fm)
             p.setPen(QColor(DIM))
-            hint = f"↺ {binding.ccw.summary() if binding.ccw else ''}   {binding.cw.summary()} ↻"
-            p.drawText(QRectF(c.x() - r - 30, rect.bottom() + 26, 2 * r + 60, 16),
-                       Qt.AlignHCenter, hint.strip())
-
-    # ---------- interaction ----------
-    def _hit(self, pos: QPointF) -> tuple[str, str] | None:
-        for eid, rect in self._knob_rects.items():
-            if rect.adjusted(-6, -6, 6, 26).contains(pos):
-                return ("encoder", eid)
-        for kid, rect in self._key_rects.items():
-            if rect.contains(pos):
-                return ("key", kid)
-        return None
-
-    def mouseMoveEvent(self, e):
-        hit = self._hit(e.position())
-        if hit != self._hover:
-            self._hover = hit
-            self.setCursor(Qt.PointingHandCursor if hit else Qt.ArrowCursor)
-            self.update()
+            hint = f"↺ {binding.ccw.summary() if binding.ccw else ''}   {binding.cw.summary() if binding.cw else ''} ↻"
+            p.drawText(QRectF(c.x() - r - 40, rect.bottom() + 30, 2 * r + 80, 16),
+                       Qt.AlignHCenter, " ".join(hint.split()))
 
     def mousePressEvent(self, e):
-        if hasattr(self, "_layer_btn") and self._layer_btn.contains(e.position()):
-            self.layer_cycle.emit((self.layer_idx + 1) % 3)
+        for eid, rect in self._knob_rects.items():
+            if rect.adjusted(-6, -6, 6, 40).contains(e.position()):
+                self.sel_id = eid
+                self.selected.emit(eid)
+                self.update()
+                return
+
+
+class LedRow(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.layer_idx = 0
+        self.accent = "#007acc"
+        self.setFixedHeight(14)
+
+    def paintEvent(self, _):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)
+        for i in range(3):
+            cx = self.width() - 10 - (2 - i) * 18
+            on = i == self.layer_idx
+            p.setPen(Qt.NoPen)
+            p.setBrush(QColor(self.accent if on else "#3f3f46"))
+            p.drawEllipse(QPointF(cx, 7), 5 if on else 3.5, 5 if on else 3.5)
+            if on:
+                p.setOpacity(0.25)
+                p.drawEllipse(QPointF(cx, 7), 9, 9)
+                p.setOpacity(1.0)
+        p.end()
+
+
+class KeypadWidget(QWidget):
+    selected = Signal(str, str)  # ("key"|"encoder"), id
+    layer_cycle = Signal(int)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.profile = None
+        self.layer_idx = 0
+        self.accent = "#007acc"
+
+        self.setMinimumSize(470, 600)
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(30, 30, 30, 30)
+        lay.setSpacing(18)
+
+        self.knob_row = KnobRow()
+        self.knob_row.selected.connect(lambda eid: self.selected.emit("encoder", eid))
+        lay.addWidget(self.knob_row)
+
+        grid = QGridLayout()
+        grid.setSpacing(14)
+        self.key_btns: dict[str, QPushButton] = {}
+        self.key_lbls: dict[str, tuple[QLabel, QLabel]] = {}
+        for idx, kid in enumerate(KEY_IDS):
+            r, c = divmod(idx, 3)
+            b = QPushButton()
+            b.setCheckable(True)
+            b.setMinimumHeight(66)
+            b.setCursor(Qt.PointingHandCursor)
+            b.clicked.connect(lambda _, k=kid: self._pick_key(k))
+            inner = QVBoxLayout(b)
+            inner.setContentsMargins(4, 8, 4, 8)
+            inner.setSpacing(2)
+            lbl = QLabel("")
+            lbl.setAlignment(Qt.AlignCenter)
+            f = QFont(b.font())
+            f.setBold(True)
+            f.setPointSizeF(11)
+            lbl.setFont(f)
+            code = QLabel("")
+            code.setAlignment(Qt.AlignCenter)
+            fm = QFont("DejaVu Sans Mono")
+            fm.setPointSizeF(9)
+            code.setFont(fm)
+            code.setStyleSheet(f"color: {DIM}; background: transparent;")
+            inner.addWidget(lbl)
+            inner.addWidget(code)
+            grid.addWidget(b, r, c)
+            self.key_btns[kid] = b
+            self.key_lbls[kid] = (lbl, code)
+
+        self.layer_btn = QPushButton("layer")
+        self.layer_btn.setMinimumHeight(44)
+        self.layer_btn.setCursor(Qt.PointingHandCursor)
+        self.layer_btn.clicked.connect(lambda: self.layer_cycle.emit((self.layer_idx + 1) % 3))
+        grid.addWidget(self.layer_btn, 0, 3)
+        self.leds = LedRow()
+        grid.addWidget(self.leds, 1, 3)
+        grid.setColumnStretch(0, 1)
+        grid.setColumnStretch(1, 1)
+        grid.setColumnStretch(2, 1)
+        grid.setColumnMinimumWidth(3, 84)
+        grid.setRowMinimumHeight(4, 0)
+        lay.addLayout(grid)
+        lay.addStretch(1)
+
+    # ---------- state ----------
+    def set_accent(self, accent: str):
+        self.accent = accent
+        self.knob_row.accent = accent
+        self.leds.accent = accent
+        self.key_btns[KEY_IDS[0]].setStyleSheet(key_qss(accent))
+        for b in self.key_btns.values():
+            b.setStyleSheet(key_qss(accent))
+        self.layer_btn.setStyleSheet(key_qss(accent))
+        self.update()
+
+    def set_profile(self, profile, layer_idx: int):
+        self.profile = profile
+        self.layer_idx = layer_idx
+        self.refresh()
+
+    def refresh(self):
+        if not self.profile:
             return
-        hit = self._hit(e.position())
-        if hit:
-            self.select(*hit)
-            self.selected.emit(*hit)
+        layer = self.profile.layer(self.layer_idx)
+        for kid, b in self.key_btns.items():
+            lbl, code = self.key_lbls[kid]
+            binding = layer.binding(kid)
+            label = binding.display_label()
+            action = binding.action
+            combo = action.summary() if action and action.summary() != label else ""
+            lbl.setText(label or "—")
+            lbl.setStyleSheet("" if label else f"color: {FAINT}; background: transparent;")
+            code.setText(combo)
+        self.knob_row.profile = self.profile
+        self.knob_row.layer_idx = self.layer_idx
+        self.leds.layer_idx = self.layer_idx
+        self.knob_row.update()
+        self.leds.update()
+        self.update()
+
+    def select(self, kind: str, ident: str):
+        for kid, b in self.key_btns.items():
+            b.setChecked(kind == "key" and kid == ident)
+        self.knob_row.sel_id = ident if kind == "encoder" else None
+        self.knob_row.update()
+
+    def _pick_key(self, kid: str):
+        self.select("key", kid)
+        self.selected.emit("key", kid)
+
+    # ---------- case ----------
+    def paintEvent(self, _):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)
+        path = QPainterPath()
+        path.addRoundedRect(QRectF(self.rect()).adjusted(8, 8, -8, -8), 18, 18)
+        p.fillPath(path, QColor(PANEL))
+        p.setPen(QPen(QColor(BORDER), 1.5))
+        p.drawPath(path)
+        p.end()
