@@ -63,7 +63,7 @@ class ProfilePanel(QFrame):
             trow.addWidget(b)
         trow.addStretch(1)
         b = QPushButton("Rename")
-        b.setFixedWidth(72)
+        b.setFixedSize(72, 30)
         b.setStyleSheet("padding: 4px 0;")
         b.setToolTip("Rename profile")
         b.clicked.connect(self._rename)

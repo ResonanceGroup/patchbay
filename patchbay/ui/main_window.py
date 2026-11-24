@@ -35,8 +35,12 @@ class GripperHandle(QSplitterHandle):
             p.setPen(Qt.PenStyle.NoPen)
             p.setBrush(QColor("#6e6e6e"))
             cx, cy = self.width() // 2, self.height() // 2
-            for dy in (-4, 0, 4):
-                p.drawEllipse(cx - 1, cy + dy - 1, 3, 3)
+            if self.orientation() == Qt.Orientation.Vertical:
+                for dy in (-5, 0, 5):
+                    p.drawRoundedRect(cx - 5, cy + dy - 1, 10, 2, 1, 1)
+            else:
+                for dx in (-5, 0, 5):
+                    p.drawRoundedRect(cx + dx - 1, cy - 5, 2, 10, 1, 1)
         finally:
             self._painting = False
 
@@ -61,9 +65,13 @@ class SnapSplitter(QSplitter):
             return
         first = self.sizes()[0]
         edge = int(total * 0.05)
-        lo = self.widget(0).minimumSizeHint().height()
-        hi = total - self.handleWidth() - \
-            self.widget(1).minimumSizeHint().height()
+        horiz = self.orientation() == Qt.Orientation.Horizontal
+        w0 = self.widget(0)
+        lo = (w0.minimumSizeHint().width() if horiz
+              else w0.minimumSizeHint().height())
+        hi = (total - self.handleWidth() -
+              (self.widget(1).minimumSizeHint().width() if horiz
+               else self.widget(1).minimumSizeHint().height()))
         target = None
         if first - lo <= edge:
             target = 0
@@ -164,7 +172,7 @@ class MainWindow(QMainWindow):
         kp_lay.addLayout(kp_v)
         kp_lay.addStretch(1)
 
-        self.body_split = QSplitter(Qt.Orientation.Horizontal)
+        self.body_split = SnapSplitter(Qt.Orientation.Horizontal)
         self.body_split.addWidget(left_w)
         self.body_split.addWidget(kp_host)
         self.body_split.setStretchFactor(0, 0)
