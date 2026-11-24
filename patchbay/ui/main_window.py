@@ -6,8 +6,8 @@ from pathlib import Path
 from PySide6.QtCore import Qt, QPoint, QTimer
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (QHBoxLayout, QLabel, QMainWindow,
-                               QPushButton, QSplitter, QSplitterHandle,
-                               QVBoxLayout, QWidget)
+                               QPushButton, QSizePolicy, QSplitter,
+                               QSplitterHandle, QVBoxLayout, QWidget)
 
 from ..core.profile import ProfileState, load_profiles
 from ..core.window_rules import active_window, best_profile
@@ -58,17 +58,12 @@ class GripperHandle(QSplitterHandle):
                 p.setBrush(QColor("#2a2a2a"))
                 p.drawRoundedRect(2, 2, self.width() - 4, self.height() - 4,
                                  3, 3)
+            # flat 2px line, same thickness for both splitters
+            p.setBrush(QColor("#8a8a8a"))
             if self.orientation() == Qt.Orientation.Vertical:
-                # 2px bar centered on cy; 1px highlight on its top edge
-                p.setBrush(QColor("#161616"))
                 p.drawRoundedRect(cx - 18, cy - 1, 36, 2, 1, 1)
-                p.setBrush(QColor("#8a8a8a"))
-                p.drawRoundedRect(cx - 18, cy - 1, 36, 1, 1, 1)
             else:
-                p.setBrush(QColor("#161616"))
                 p.drawRoundedRect(cx - 1, cy - 18, 2, 36, 1, 1)
-                p.setBrush(QColor("#8a8a8a"))
-                p.drawRoundedRect(cx - 2, cy - 18, 2, 36, 1, 1)
         finally:
             self._painting = False
 
@@ -109,19 +104,25 @@ class SnapSplitter(QSplitter):
         if total <= 0 or hi <= lo:
             return
         first = self.sizes()[0]
-        edge = int(total * 0.05)
+        # collapsible splitters travel the full range and only snap in the
+        # last ~100px; non-collapsible ones snap near their content minimum
+        edge = (min(120, int(total * 0.2)) if self.childrenCollapsible()
+                else int(total * 0.05))
         target = None
         if first - lo <= edge:
             target = 0
         elif hi - first <= edge:
             target = 1
-        if target == self._snapped:
-            return
-        self._snapped = target
+        # magnetic: while inside the zone keep pinning to the end so the
+        # handle stays put as the mouse keeps moving; free outside it
         if target == 0:
+            self._snapped = 0
             self.setSizes([lo, total - lo - self.handleWidth()])
         elif target == 1:
+            self._snapped = 1
             self.setSizes([hi, total - hi - self.handleWidth()])
+        else:
+            self._snapped = None
 
     def _start_drag(self):
         """Begin a synthetic drag from the handle's current position."""
@@ -221,6 +222,13 @@ class MainWindow(QMainWindow):
         self.left_split.setCollapsible(0, True)
         self.left_split.setCollapsible(1, True)
         self.left_split.setChildrenCollapsible(True)
+        # let both panels shrink gradually (not jump at their content min) so
+        # the snap, not QSplitter's native collapse, decides where it closes
+        for _wdg in (self.profile_panel, self.editor):
+            _sp = _wdg.sizePolicy()
+            _sp.setVerticalPolicy(QSizePolicy.Policy.Ignored)
+            _wdg.setSizePolicy(_sp)
+            _wdg.setMinimumHeight(0)
         self.left_split.setSizes([220, 480])
         left_lay.addWidget(self.left_split, 1)
         left_w.setMinimumWidth(240)
