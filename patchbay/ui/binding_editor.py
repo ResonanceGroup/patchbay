@@ -112,7 +112,7 @@ class WinScrollBar(QScrollBar):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedWidth(24)
+        self.setFixedWidth(self.BTN)
         self.setMouseTracking(True)
         self._hover = 0
         self._drag_off = None
@@ -352,7 +352,7 @@ QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
 QTreeWidget#propgrid QComboBox QAbstractItemView { background: #2d2d30;
     border: 1px solid #3f3f46; selection-background-color: #3399ff; }
 QTreeWidget#propgrid QScrollBar:vertical {
-    background: #1e1e1e; width: 24px; margin: 0; }
+    background: #1e1e1e; width: 21px; margin: 0; }
 """
 # absolute paths to the arrow assets (QSS url() is cwd-relative otherwise);
 # replace the compound placeholders first — they contain _ARROW_PNG_ as a
@@ -444,7 +444,7 @@ class BindingEditor(QFrame):
         self.categorized = True
 
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(10, 8, 24, 8)
+        lay.setContentsMargins(10, 8, 10, 8)
         lay.setSpacing(6)
 
         # panel title, same style as the Profiles heading
