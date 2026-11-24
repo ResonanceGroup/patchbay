@@ -4,8 +4,10 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (QHBoxLayout, QLabel, QMainWindow,
-                               QPushButton, QSplitter, QVBoxLayout, QWidget)
+                               QPushButton, QSplitter, QSplitterHandle,
+                               QVBoxLayout, QWidget)
 
 from ..core.profile import ProfileState, load_profiles
 from ..core.window_rules import active_window, best_profile
@@ -13,6 +15,75 @@ from .binding_editor import BindingEditor
 from .keypad_widget import KeypadWidget
 from .profile_panel import ProfilePanel
 from .theme import ACCENT_DEFAULT, QSS, PANEL, segmented_qss
+
+
+class GripperHandle(QSplitterHandle):
+    """Splitter handle with a small gripper dot-row in the center."""
+
+    def __init__(self, orientation, parent):
+        super().__init__(orientation, parent)
+        self._painting = False
+
+    def paintEvent(self, e):
+        if self._painting:
+            return
+        self._painting = True
+        try:
+            p = QPainter(self)
+            p.fillRect(self.rect(), QColor("#1e1e1e"))
+            p.setRenderHint(QPainter.RenderHint.Antialiasing)
+            p.setPen(Qt.PenStyle.NoPen)
+            p.setBrush(QColor("#6e6e6e"))
+            cx, cy = self.width() // 2, self.height() // 2
+            for dy in (-4, 0, 4):
+                p.drawEllipse(cx - 1, cy + dy - 1, 3, 3)
+        finally:
+            self._painting = False
+
+
+class SnapSplitter(QSplitter):
+    """QSplitter with gripper handles that snaps to the extremes when the
+    drag lands within ~5% of either end."""
+
+    def __init__(self, orientation, parent=None):
+        super().__init__(orientation, parent)
+        self.setHandleWidth(12)
+        self._snapped = None
+
+    def createHandle(self):
+        return GripperHandle(self.orientation(), self)
+
+    def _maybe_snap(self):
+        if len(self.sizes()) != 2:
+            return
+        total = sum(self.sizes()) + self.handleWidth()
+        if total <= 0:
+            return
+        first = self.sizes()[0]
+        edge = int(total * 0.05)
+        lo = self.widget(0).minimumSizeHint().height()
+        hi = total - self.handleWidth() - \
+            self.widget(1).minimumSizeHint().height()
+        target = None
+        if first - lo <= edge:
+            target = 0
+        elif hi - first <= edge:
+            target = 1
+        if target == self._snapped:
+            return
+        self._snapped = target
+        if target == 0:
+            self.setSizes([lo, total - lo - self.handleWidth()])
+        elif target == 1:
+            self.setSizes([hi, total - hi - self.handleWidth()])
+
+    def event(self, e):
+        from PySide6.QtCore import QEvent
+        if e.type() == QEvent.Type.MouseMove:
+            self._maybe_snap()
+        elif e.type() == QEvent.Type.MouseButtonRelease:
+            self._snapped = None
+        return super().event(e)
 
 
 class MainWindow(QMainWindow):
@@ -67,7 +138,7 @@ class MainWindow(QMainWindow):
         left_lay = QVBoxLayout(left_w)
         left_lay.setContentsMargins(0, 0, 0, 0)
         left_lay.setSpacing(12)
-        self.left_split = QSplitter(Qt.Orientation.Vertical)
+        self.left_split = SnapSplitter(Qt.Orientation.Vertical)
         self.left_split.addWidget(self.profile_panel)
         self.left_split.addWidget(self.editor)
         self.left_split.setStretchFactor(0, 0)
