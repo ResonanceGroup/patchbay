@@ -98,8 +98,7 @@ class Injector:
         keys = sorted(set(
             list(range(0, 0x2FF))  # broad: standard + consumer keys
         ))
-        self.ui = UInput({ecodes.EV_KEY: keys}, name="patchbay",
-                         dup=False)
+        self.ui = UInput({ecodes.EV_KEY: keys}, name="patchbay")
 
     def close(self):
         self.ui.close()
