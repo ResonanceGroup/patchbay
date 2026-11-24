@@ -4,7 +4,9 @@
 
 Patchbay is a desktop app for programming cheap WCH CH57x macro keypads (12 keys, 2 clickable rotary encoders, 3 onboard layers) with per-application profiles. Pick a key, pick an action — Patchbay handles the firmware and the Linux input plumbing for you.
 
-![The keypad: 12 keys, 2 encoders, 3 layers](assets/keypad-layout.svg)
+![The keypad: 12 keys, 2 clickable encoders, 3 onboard layers](assets/keypad-photo.png)
+
+*Product photo from the vendor listing; this is the exact device Patchbay is developed against.*
 
 ## Why
 
@@ -37,6 +39,10 @@ physical key / encoder (onboard layer)
 | Controls | 12 keys (3×4), 2 clickable encoders, side layer button |
 | Layers | 3 onboard, cycled by the side button (LED indicators) |
 | Programming | USB, via [ch57x-keyboard-tool](https://github.com/joekid/ch57x-keyboard-tool) (validate + upload; no read-back) |
+
+Control layout and numbering used throughout Patchbay profiles:
+
+![Layout: encoders E1/E2, keys K01-K12, layer button](assets/keypad-layout.svg)
 
 ## Project layout
 
