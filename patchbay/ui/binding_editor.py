@@ -151,6 +151,13 @@ class WinScrollBar(QScrollBar):
                                 QPoint(cx, bot.y() + 14)]))
         p.setBrush(QColor("#3e3e42"))
         p.drawRect(handle)
+        p.setPen(QPen(QColor("#5a5a5f")))
+        p.setBrush(Qt.BrushStyle.NoBrush)
+        p.drawRect(handle.adjusted(0, 0, -1, -1))
+        p.setPen(QPen(QColor("#1e1e1e")))
+        p.drawLine(0, self.BTN - 1, self.width(), self.BTN - 1)
+        p.drawLine(0, self.height() - self.BTN,
+                   self.width(), self.height() - self.BTN)
 
     def mousePressEvent(self, e):
         top, bot, handle, _ = self._rects()
