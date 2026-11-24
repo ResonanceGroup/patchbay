@@ -23,6 +23,7 @@ class MainWindow(QMainWindow):
 
         self.setStyleSheet(QSS)
         self.setWindowTitle("Patchbay")
+        self.setMinimumSize(880, 540)
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -57,24 +58,24 @@ class MainWindow(QMainWindow):
         self.layer_btns[0].setChecked(True)
         root.addLayout(head)
 
-        # ---- body ----
+        # ---- body: panel left, keypad right ----
         body = QHBoxLayout()
         body.setSpacing(14)
+
+        self.editor = BindingEditor(self.accent())
+        self.editor.setFixedWidth(340)
+        self.editor.binding_changed.connect(self._binding_changed)
+        body.addWidget(self.editor, 0)
+
         self.keypad = KeypadWidget()
         self.keypad.setMaximumWidth(560)
         self.keypad.selected.connect(self._selected)
-        self.keypad.layer_cycle.connect(self._layer_changed)
         kp_host = QHBoxLayout()
         kp_host.setContentsMargins(0, 0, 0, 0)
         kp_host.addStretch(1)
         kp_host.addWidget(self.keypad)
         kp_host.addStretch(1)
         body.addLayout(kp_host, 3)
-
-        self.editor = BindingEditor(self.accent())
-        self.editor.setFixedWidth(340)
-        self.editor.binding_changed.connect(self._binding_changed)
-        body.addWidget(self.editor, 0)
         root.addLayout(body, 1)
 
         # ---- status ----

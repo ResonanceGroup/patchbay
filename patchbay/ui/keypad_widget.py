@@ -8,8 +8,8 @@ from __future__ import annotations
 from PySide6.QtCore import Qt, QRectF, QPointF, Signal
 from PySide6.QtGui import (QBrush, QColor, QFont, QLinearGradient, QPainter,
                            QPainterPath, QPen)
-from PySide6.QtWidgets import (QGridLayout, QLabel, QPushButton, QVBoxLayout,
-                               QWidget)
+from PySide6.QtWidgets import (QGridLayout, QHBoxLayout, QLabel, QPushButton,
+                               QSizePolicy, QVBoxLayout, QWidget)
 
 from ..core.profile import ENCODER_IDS, KEY_IDS
 from .theme import BORDER, DIM, FAINT, KEY_HOVER, PANEL, TEXT, key_qss
@@ -26,7 +26,8 @@ class KnobRow(QWidget):
         self.sel_id: str | None = None
         self.accent = "#007acc"
         self._knob_rects: dict[str, QRectF] = {}
-        self.setMinimumHeight(200)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setMinimumHeight(110)
 
     def paintEvent(self, _):
         p = QPainter(self)
@@ -115,7 +116,6 @@ class LedRow(QWidget):
 
 class KeypadWidget(QWidget):
     selected = Signal(str, str)  # ("key"|"encoder"), id
-    layer_cycle = Signal(int)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -124,15 +124,25 @@ class KeypadWidget(QWidget):
         self.sel: tuple[str, str] | None = None
         self.accent = "#007acc"
 
-        self.setMinimumSize(470, 600)
+        self.setMinimumSize(300, 380)
 
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(30, 30, 30, 30)
-        lay.setSpacing(18)
+        lay.setContentsMargins(24, 24, 24, 24)
+        lay.setSpacing(14)
 
         self.knob_row = KnobRow()
         self.knob_row.selected.connect(lambda eid: self.selected.emit("encoder", eid))
         lay.addWidget(self.knob_row)
+
+        # LEDs between the encoders and the keys, like the real pad
+        self.leds = LedRow()
+        self.leds.setFixedWidth(64)
+        led_host = QHBoxLayout()
+        led_host.setContentsMargins(0, 0, 0, 0)
+        led_host.addStretch(1)
+        led_host.addWidget(self.leds)
+        led_host.addStretch(1)
+        lay.addLayout(led_host)
 
         grid = QGridLayout()
         grid.setSpacing(14)
@@ -142,7 +152,8 @@ class KeypadWidget(QWidget):
             r, c = divmod(idx, 3)
             b = QPushButton()
             b.setCheckable(True)
-            b.setMinimumHeight(66)
+            b.setMinimumHeight(44)
+            b.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             b.setCursor(Qt.PointingHandCursor)
             b.clicked.connect(lambda _, k=kid: self._pick_key(k))
             inner = QVBoxLayout(b)
@@ -165,19 +176,9 @@ class KeypadWidget(QWidget):
             grid.addWidget(b, r, c)
             self.key_btns[kid] = b
             self.key_lbls[kid] = (lbl, code)
-
-        self.layer_btn = QPushButton("layer")
-        self.layer_btn.setMinimumHeight(44)
-        self.layer_btn.setCursor(Qt.PointingHandCursor)
-        self.layer_btn.clicked.connect(lambda: self.layer_cycle.emit((self.layer_idx + 1) % 3))
-        grid.addWidget(self.layer_btn, 0, 3)
-        self.leds = LedRow()
-        grid.addWidget(self.leds, 1, 3)
         grid.setColumnStretch(0, 1)
         grid.setColumnStretch(1, 1)
         grid.setColumnStretch(2, 1)
-        grid.setColumnMinimumWidth(3, 84)
-        grid.setRowMinimumHeight(4, 0)
         lay.addLayout(grid)
         lay.addStretch(1)
 
@@ -189,7 +190,6 @@ class KeypadWidget(QWidget):
         self.key_btns[KEY_IDS[0]].setStyleSheet(key_qss(accent))
         for b in self.key_btns.values():
             b.setStyleSheet(key_qss(accent))
-        self.layer_btn.setStyleSheet(key_qss(accent))
         self.update()
 
     def set_profile(self, profile, layer_idx: int):

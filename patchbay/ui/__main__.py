@@ -17,11 +17,16 @@ def main():
     ap.add_argument("--select", help="preselect a control, e.g. key:K03 or encoder:E1")
     ap.add_argument("--profile", help="profile app name to show")
     ap.add_argument("--layer", type=int, default=0)
+    ap.add_argument("--size", help="window size WxH, e.g. 900x560")
     args = ap.parse_args()
 
     app = QApplication(sys.argv)
     w = MainWindow(Path(args.profiles))
-    w.resize(1180, 800)
+    if args.size:
+        ww, hh = map(int, args.size.lower().split("x"))
+        w.resize(ww, hh)
+    else:
+        w.resize(1180, 800)
     if args.profile:
         for i, pr in enumerate(w.profiles):
             if pr.app == args.profile:
