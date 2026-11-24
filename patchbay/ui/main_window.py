@@ -23,6 +23,15 @@ class GripperHandle(QSplitterHandle):
     def __init__(self, orientation, parent):
         super().__init__(orientation, parent)
         self._painting = False
+        self.setMouseTracking(True)
+
+    def enterEvent(self, e):
+        self.update()
+        super().enterEvent(e)
+
+    def leaveEvent(self, e):
+        self.update()
+        super().leaveEvent(e)
 
     def paintEvent(self, e):
         if self._painting:
@@ -44,6 +53,9 @@ class GripperHandle(QSplitterHandle):
                 p.drawRoundedRect(cx - 1, cy - 18, 2, 36, 1, 1)
                 p.setBrush(QColor("#8a8a8a"))
                 p.drawRoundedRect(cx - 2, cy - 18, 2, 36, 1, 1)
+            if self.underMouse():
+                p.setBrush(QColor(255, 255, 255, 14))
+                p.fillRect(self.rect(), p.brush())
         finally:
             self._painting = False
 
