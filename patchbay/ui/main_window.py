@@ -54,7 +54,7 @@ class MainWindow(QMainWindow):
         self.layer_btns[0].setChecked(True)
         root.addLayout(head)
 
-        # ---- body: panel left, keypad right ----
+        # ---- body: panel left, keypad right (draggable divider) ----
         body = QHBoxLayout()
         body.setSpacing(14)
 
@@ -76,23 +76,32 @@ class MainWindow(QMainWindow):
         self.left_split.setCollapsible(1, False)
         self.left_split.setSizes([220, 480])
         left_lay.addWidget(self.left_split, 1)
-        left_w.setFixedWidth(340)
-        body.addWidget(left_w, 0)
+        left_w.setMinimumWidth(240)
 
         self.keypad = KeypadWidget()
         self.keypad.setMaximumWidth(640)
         self.keypad.selected.connect(self._selected)
-        kp_host = QHBoxLayout()
-        kp_host.setContentsMargins(0, 0, 0, 0)
-        kp_host.addStretch(1)
+        kp_host = QWidget()
+        kp_lay = QHBoxLayout(kp_host)
+        kp_lay.setContentsMargins(0, 0, 0, 0)
+        kp_lay.addStretch(1)
         kp_v = QVBoxLayout()
         kp_v.setContentsMargins(0, 0, 0, 0)
         kp_v.addStretch(1)
         kp_v.addWidget(self.keypad)
         kp_v.addStretch(1)
-        kp_host.addLayout(kp_v)
-        kp_host.addStretch(1)
-        body.addLayout(kp_host, 3)
+        kp_lay.addLayout(kp_v)
+        kp_lay.addStretch(1)
+
+        self.body_split = QSplitter(Qt.Orientation.Horizontal)
+        self.body_split.addWidget(left_w)
+        self.body_split.addWidget(kp_host)
+        self.body_split.setStretchFactor(0, 0)
+        self.body_split.setStretchFactor(1, 1)
+        self.body_split.setCollapsible(0, False)
+        self.body_split.setCollapsible(1, False)
+        self.body_split.setSizes([340, 700])
+        body.addWidget(self.body_split, 1)
         root.addLayout(body, 1)
 
         # ---- status ----

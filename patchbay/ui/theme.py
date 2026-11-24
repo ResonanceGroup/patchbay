@@ -1,4 +1,7 @@
 """Dark theme tokens + QSS — VS Code Dark+ palette. Accent comes from the active profile."""
+from pathlib import Path
+
+_ASSETS = str(Path(__file__).parent / "assets")
 
 # VS Code Dark+
 BG = "#1e1e1e"
@@ -30,6 +33,9 @@ QComboBox, QLineEdit, QPlainTextEdit {{
     padding: 5px 8px; color: {TEXT}; selection-background-color: {ACCENT_DEFAULT}; }}
 QComboBox:focus, QLineEdit:focus, QPlainTextEdit:focus {{ border: 1px solid #007acc; }}
 QComboBox::drop-down {{ border: none; width: 20px; }}
+QComboBox::down-arrow {{ image: url({_ASSETS}/down_arrow.png);
+    width: 12px; height: 8px; }}
+QComboBox[open="true"]::down-arrow {{ image: url({_ASSETS}/up_arrow.png); }}
 QComboBox QAbstractItemView {{ background: #3c3c3c; border: 1px solid {BORDER};
     selection-background-color: #37373d; }}
 QPushButton {{ background: {CARD}; border: 1px solid {BORDER}; border-radius: 4px;
@@ -39,6 +45,8 @@ QStatusBar {{ background: {PANEL}; color: {DIM}; }}
 QSplitter::handle {{ background: {BG}; }}
 QSplitter::handle:vertical {{ height: 8px; }}
 QSplitter::handle:vertical:hover {{ background: {BORDER}; }}
+QSplitter::handle:horizontal {{ width: 10px; }}
+QSplitter::handle:horizontal:hover {{ background: {BORDER}; }}
 """
 
 
