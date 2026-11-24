@@ -120,7 +120,7 @@ class ValueStack(QStackedWidget):
         # across stylesheet boundaries in Qt's cascade)
         keys_page.setStyleSheet("background: #252526;")
         kl = QHBoxLayout(keys_page)
-        kl.setContentsMargins(0, 0, 0, 0)
+        kl.setContentsMargins(0, 0, 6, 0)
         kl.setSpacing(4)
         self.chords = QLabel("")
         self.chords.setStyleSheet(f"color: {DIM}; font-family: '{MONO}';"
