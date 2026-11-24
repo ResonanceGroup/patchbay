@@ -103,6 +103,8 @@ class ValueStack(QStackedWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         keys_page = QWidget()
+        keys_page.setObjectName("keyspage")
+        keys_page.setStyleSheet("#keyspage { background: #252526; }")
         kl = QHBoxLayout(keys_page)
         kl.setContentsMargins(0, 0, 0, 0)
         kl.setSpacing(4)
@@ -168,11 +170,13 @@ class _GridDelegate(QStyledItemDelegate):
                                 QPoint(cx - 2, cy + 4)])
             return
         p.setPen(QPen(QColor("#4a4a52")))
+        no_bottom = index.sibling(index.row(), 0).data(Qt.UserRole + 3)
         if index.column() == 0:
             # row line starts after the gutter; gutter itself stays clean
-            p.drawLine(QPoint(r.left() + 22, r.bottom()), r.bottomRight())
+            if not no_bottom:
+                p.drawLine(QPoint(r.left() + 22, r.bottom()), r.bottomRight())
             p.drawLine(r.topRight(), r.bottomRight())
-        else:
+        elif not no_bottom:
             p.drawLine(r.bottomLeft(), r.bottomRight())
 
 
@@ -182,6 +186,8 @@ QTreeWidget#propgrid { background: #252526; border: 1px solid #3f3f46;
 QTreeWidget#propgrid QLineEdit, QTreeWidget#propgrid QComboBox {
     background: #252526; border: none; border-bottom: 1px solid #4a4a52;
     padding: 4px 6px; min-height: 18px; }
+QTreeWidget#propgrid QLineEdit[noborder="true"],
+QTreeWidget#propgrid QComboBox[noborder="true"] { border-bottom: none; }
 QTreeWidget#propgrid QComboBox::drop-down { background: transparent;
     border: none; width: 18px; }
 QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
@@ -452,6 +458,38 @@ class BindingEditor(QFrame):
                 gen_label(None)
                 gen_action(None, "action", "Action")
                 self._sort_flat()
+        self._mark_heading_adjacent()
+
+    def _mark_heading_adjacent(self):
+        """Flag the last row before each heading so its bottom line is hidden."""
+        g = self.grid
+
+        def _set_nb(row, val):
+            w = g.itemWidget(row, 1)
+            if w is None:
+                return
+            targets = (w.findChildren(QLineEdit) + w.findChildren(QComboBox)
+                       if isinstance(w, QStackedWidget) else [w])
+            for t in targets:
+                t.setProperty("noborder", val)
+                t.style().unpolish(t)
+                t.style().polish(t)
+
+        for i in range(g.topLevelItemCount()):
+            top = g.topLevelItem(i)
+            rows = ([top.child(j) for j in range(top.childCount())]
+                    if top.data(0, Qt.UserRole) == "cat" else [top])
+            for row in rows:
+                _set_nb(row, False)
+        prev_last = None
+        for i in range(g.topLevelItemCount()):
+            top = g.topLevelItem(i)
+            if top.data(0, Qt.UserRole) == "cat":
+                if prev_last is not None:
+                    prev_last.setData(0, Qt.UserRole + 3, True)
+                    _set_nb(prev_last, True)
+                prev_last = (top.child(top.childCount() - 1)
+                             if top.childCount() else top)
 
     def _sort_flat(self):
         items = [self.grid.topLevelItem(i)
