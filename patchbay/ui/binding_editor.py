@@ -108,11 +108,11 @@ class WinScrollBar(QScrollBar):
     buttons. Painted directly — Qt 6 QSS cannot render scrollbar arrows and
     the Windows QStyle segfaults under a QSS ancestor."""
 
-    BTN = 14
+    BTN = 21
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedWidth(16)
+        self.setFixedWidth(24)
         self.setMouseTracking(True)
         self._hover = 0
         self._drag_off = None
@@ -127,10 +127,10 @@ class WinScrollBar(QScrollBar):
         if rng <= 0:
             hh, yy = theight, ttop
         else:
-            hh = max(24, int(theight * page / (rng + page)))
+            hh = max(30, int(theight * page / (rng + page)))
             span = theight - hh
             yy = ttop + int(span * (self.value() - self.minimum()) / rng)
-        return top, bot, QRect(2, yy, w - 4, hh), (ttop, theight)
+        return top, bot, QRect(0, yy, w, hh), (ttop, theight)
 
     def paintEvent(self, e):
         p = QPainter(self)
@@ -142,14 +142,15 @@ class WinScrollBar(QScrollBar):
                        else QColor("#3e3e42"))
         p.setPen(Qt.PenStyle.NoPen)
         p.setBrush(QColor("#d4d4d4"))
-        p.drawPolygon(QPolygon([QPoint(top.x() + 4, top.y() + 9),
-                                QPoint(top.x() + 8, top.y() + 4),
-                                QPoint(top.x() + 12, top.y() + 9)]))
-        p.drawPolygon(QPolygon([QPoint(bot.x() + 4, bot.y() + 5),
-                                QPoint(bot.x() + 12, bot.y() + 5),
-                                QPoint(bot.x() + 8, bot.y() + 10)]))
+        cx = self.width() // 2
+        p.drawPolygon(QPolygon([QPoint(cx - 6, top.y() + 13),
+                                QPoint(cx, top.y() + 7),
+                                QPoint(cx + 6, top.y() + 13)]))
+        p.drawPolygon(QPolygon([QPoint(cx - 6, bot.y() + 8),
+                                QPoint(cx + 6, bot.y() + 8),
+                                QPoint(cx, bot.y() + 14)]))
         p.setBrush(QColor("#3e3e42"))
-        p.drawRoundedRect(handle, 2, 2)
+        p.drawRect(handle)
 
     def mousePressEvent(self, e):
         top, bot, handle, _ = self._rects()

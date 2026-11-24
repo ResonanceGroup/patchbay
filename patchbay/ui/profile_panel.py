@@ -41,7 +41,8 @@ class ProfilePanel(QFrame):
         self.app_combo.currentIndexChanged.connect(self._app_changed)
         arow.addWidget(self.app_combo, 1)
         self.gear = QPushButton("⚙")
-        self.gear.setFixedWidth(34)
+        self.gear.setFixedSize(34, 30)
+        self.gear.setStyleSheet("padding: 4px 0; font-size: 15px;")
         self.gear.setToolTip("Settings")
         self.gear.clicked.connect(self._settings)
         arow.addWidget(self.gear)
@@ -52,15 +53,20 @@ class ProfilePanel(QFrame):
         trow.setSpacing(6)
         for text, tip, slot in (("+", "Add profile", self._add),
                                 ("⧉", "Duplicate profile", self._duplicate),
-                                ("ren", "Rename profile", self._rename),
                                 ("–", "Remove profile", self._remove)):
             b = QPushButton(text)
-            b.setFixedWidth(34)
-            b.setStyleSheet("padding: 5px 0;")
+            b.setFixedSize(34, 30)
+            b.setStyleSheet("padding: 4px 0;")
             b.setToolTip(tip)
             b.clicked.connect(slot)
             trow.addWidget(b)
         trow.addStretch(1)
+        b = QPushButton("ren")
+        b.setFixedWidth(48)
+        b.setStyleSheet("padding: 4px 0;")
+        b.setToolTip("Rename profile")
+        b.clicked.connect(self._rename)
+        trow.addWidget(b)
         lay.addLayout(trow)
 
         # ---- profile list ----

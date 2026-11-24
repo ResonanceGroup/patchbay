@@ -59,14 +59,16 @@ def _xprop(win_id: int, prop: str) -> str:
 
 
 def list_windows() -> list[tuple[int, str, str]]:
-    """Open windows on the current X display: (id, wm_class, title)."""
+    """Open windows on the current X display: (id, wm_class, title).
+    Keeps only windows with a real caption — skips unnamed windows,
+    windows titled just the program name, and duplicates."""
     try:
         out = subprocess.run(
-            ["xdotool", "search", "."], capture_output=True, text=True,
-            timeout=5).stdout
+            ["xdotool", "search", "--onlyvisible", "."],
+            capture_output=True, text=True, timeout=5).stdout
     except (OSError, subprocess.TimeoutExpired):
         return []
-    wins = []
+    wins, seen = [], set()
     for line in out.split():
         try:
             wid = int(line)
@@ -74,8 +76,14 @@ def list_windows() -> list[tuple[int, str, str]]:
             continue
         cls = _xprop(wid, "WM_CLASS")
         title = _xprop(wid, "_NET_WM_NAME") or _xprop(wid, "WM_NAME")
-        if not cls and not title:
+        if not title:
             continue
+        toks = [t.strip('",').lower() for t in cls.split() if t.strip('",')]
+        if title.lower() in toks:
+            continue  # titled just the program name — not a real caption
+        if title in seen:
+            continue
+        seen.add(title)
         wins.append((wid, cls, title))
     return wins
 
