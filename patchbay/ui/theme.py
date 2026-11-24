@@ -32,7 +32,7 @@ QComboBox, QLineEdit, QPlainTextEdit {{
     background: #3c3c3c; border: 1px solid #3c3c3c; border-radius: 2px;
     padding: 5px 8px; color: {TEXT}; selection-background-color: {ACCENT_DEFAULT}; }}
 QComboBox:focus, QLineEdit:focus, QPlainTextEdit:focus {{ border: 1px solid #007acc; }}
-QComboBox::drop-down {{ border: none; width: 20px; }}
+QComboBox::drop-down {{ border: none; width: 20px; margin-right: 6px; }}
 QComboBox::down-arrow {{ image: url({_ASSETS}/down_arrow.png);
     width: 12px; height: 8px; }}
 QComboBox[open="true"]::down-arrow {{ image: url({_ASSETS}/up_arrow.png); }}
