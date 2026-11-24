@@ -149,9 +149,9 @@ class WinScrollBar(QScrollBar):
         p.drawPolygon(QPolygon([QPoint(cx - 6, bot.y() + 8),
                                 QPoint(cx + 6, bot.y() + 8),
                                 QPoint(cx, bot.y() + 14)]))
-        p.setBrush(QColor("#3e3e42"))
+        p.setBrush(QColor("#565660"))
         p.drawRect(handle)
-        p.setPen(QPen(QColor("#5a5a5f")))
+        p.setPen(QPen(QColor("#6e6e78")))
         p.setBrush(Qt.BrushStyle.NoBrush)
         p.drawRect(handle.adjusted(0, 0, -1, -1))
         p.setPen(QPen(QColor("#1e1e1e")))
