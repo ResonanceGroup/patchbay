@@ -40,9 +40,20 @@ class GripperHandle(QSplitterHandle):
         self._pressed = True
         super().mousePressEvent(e)
 
+    def mouseMoveEvent(self, e):
+        # native drag moves the handle first, then the splitter snaps
+        super().mouseMoveEvent(e)
+        sp = self.parent()
+        if isinstance(sp, SnapSplitter):
+            sp._maybe_snap()
+
     def mouseReleaseEvent(self, e):
         self._pressed = False
         super().mouseReleaseEvent(e)
+        sp = self.parent()
+        if isinstance(sp, SnapSplitter):
+            sp._snapped = None
+            sp._maybe_snap()
 
     def paintEvent(self, e):
         if self._painting:
@@ -152,14 +163,6 @@ class SnapSplitter(QSplitter):
             return
         self._dragging = False
         self._snapped = None
-
-    def event(self, e):
-        from PySide6.QtCore import QEvent
-        if e.type() == QEvent.Type.MouseMove:
-            self._maybe_snap()
-        elif e.type() == QEvent.Type.MouseButtonRelease:
-            self._snapped = None
-        return super().event(e)
 
 
 class MainWindow(QMainWindow):
