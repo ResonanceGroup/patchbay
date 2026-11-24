@@ -138,7 +138,7 @@ class _GridDelegate(QStyledItemDelegate):
         is_cat = index.sibling(index.row(), 0).data(Qt.UserRole) == "cat"
         r = opt.rect
         if is_cat or index.column() == 0:
-            p.fillRect(r, QColor("#2d2d30"))
+            p.fillRect(r, QColor("#37373d"))
         else:
             p.fillRect(r, QColor("#252526"))
         text = index.data(Qt.DisplayRole) or ""
@@ -148,7 +148,7 @@ class _GridDelegate(QStyledItemDelegate):
             p.setPen(QColor("#e8e8e8") if is_cat else QColor("#d4d4d4"))
             p.drawText(r.adjusted(off, 0, -4, 0),
                        int(Qt.AlignVCenter | Qt.AlignLeft), text)
-        p.setPen(QPen(QColor("#333336")))
+        p.setPen(QPen(QColor("#4a4a52")))
         p.drawLine(r.bottomLeft(), r.bottomRight())
         if index.column() != 0:
             return
