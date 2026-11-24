@@ -138,6 +138,8 @@ class _GridDelegate(QStyledItemDelegate):
         is_cat = index.sibling(index.row(), 0).data(Qt.UserRole) == "cat"
         if is_cat:
             p.fillRect(opt.rect, QColor("#37373d"))
+        elif index.column() == 0:
+            p.fillRect(opt.rect, QColor("#2d2d30"))
         opt2 = QStyleOptionViewItem(opt)
         if is_cat and index.column() == 0:
             opt2.rect.adjust(22, 0, 0, 0)
@@ -167,8 +169,13 @@ GRID_QSS = """
 QTreeWidget#propgrid { background: #252526; border: 1px solid #3f3f46;
     outline: 0; font-size: 14px; }
 QTreeWidget#propgrid::item { border-bottom: 1px solid #333336; padding: 0; }
-QTreeWidget#propgrid QLineEdit { padding: 4px 6px; min-height: 18px; }
-QTreeWidget#propgrid QComboBox { padding: 3px 4px; min-height: 18px; }
+QTreeWidget#propgrid QLineEdit { background: transparent; border: none;
+    padding: 4px 6px; min-height: 18px; }
+QTreeWidget#propgrid QComboBox { background: transparent; border: none;
+    padding: 3px 4px; min-height: 18px; }
+QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
+QTreeWidget#propgrid QComboBox QAbstractItemView { background: #252526;
+    border: 1px solid #3f3f46; selection-background-color: #37373d; }
 """
 
 
@@ -206,7 +213,7 @@ class PropertyGrid(QTreeWidget):
         it.setData(0, Qt.UserRole, "cat")
         it.setBackground(0, QColor("#37373d"))
         it.setBackground(1, QColor("#37373d"))
-        it.setSizeHint(0, QSize(0, 34))
+        it.setSizeHint(0, QSize(0, 25))
         self.addTopLevelItem(it)
         it.setExpanded(True)
         self._sync_cat_state(it)
@@ -284,7 +291,9 @@ class BindingEditor(QFrame):
         self.obj_combo.setStyleSheet(
             "QComboBox#objheader { background: #2d2d30; border: 1px solid "
             "#3f3f46; border-radius: 4px; font-size: 15px; padding: 5px 8px; }"
-            "QComboBox#objheader::drop-down { border: none; width: 18px; }")
+            "QComboBox#objheader::drop-down { border: none; width: 18px; }"
+            "QComboBox#objheader QAbstractItemView { background: #252526; "
+            "border: 1px solid #3f3f46; selection-background-color: #37373d; }")
         self.obj_combo.setEditable(False)
         for kid in KEY_IDS:
             self.obj_combo.addItem(kid, ("key", kid))
