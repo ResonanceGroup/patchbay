@@ -72,6 +72,11 @@ class ProfilePanel(QFrame):
 
         # ---- profile list ----
         self.list = QListWidget()
+        self.list.setStyleSheet(
+            "QListWidget { background: #252526; border: 1px solid #3f3f46;"
+            " border-radius: 2px; outline: 0; }"
+            "QListWidget::item { padding: 4px 6px; }"
+            "QListWidget::item:selected { background: #007acc; color: #fff; }")
         self.list.setSelectionBehavior(
             QAbstractItemView.SelectionBehavior.SelectRows)
         self.list.currentRowChanged.connect(self._row_changed)
