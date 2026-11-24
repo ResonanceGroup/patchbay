@@ -260,20 +260,30 @@ QTreeWidget#propgrid QComboBox[open="true"]::down-arrow {
 QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
 QTreeWidget#propgrid QComboBox QAbstractItemView { background: #2d2d30;
     border: 1px solid #3f3f46; selection-background-color: #3399ff; }
-QTreeWidget#propgrid QScrollBar:vertical { background: #1e1e1e; width: 12px;
+QTreeWidget#propgrid QScrollBar:vertical { background: #1e1e1e; width: 16px;
     margin: 0; border: none; }
 QTreeWidget#propgrid QScrollBar::handle:vertical { background: #3e3e42;
-    min-height: 30px; border-radius: 3px; margin: 2px 3px; }
+    min-height: 30px; border-radius: 2px; margin: 2px 2px; }
 QTreeWidget#propgrid QScrollBar::handle:vertical:hover { background: #4a4a52; }
-QTreeWidget#propgrid QScrollBar::add-line:vertical,
-QTreeWidget#propgrid QScrollBar::sub-line:vertical { height: 0; }
+QTreeWidget#propgrid QScrollBar::sub-line:vertical { border: none;
+    background: #3e3e42; height: 16px; subcontrol-position: top;
+    subcontrol-origin: margin; image: url(_UP_ARROW_PNG_); }
+QTreeWidget#propgrid QScrollBar::add-line:vertical { border: none;
+    background: #3e3e42; height: 16px; subcontrol-position: bottom;
+    subcontrol-origin: margin; image: url(_DOWN_ARROW_PNG_); }
+QTreeWidget#propgrid QScrollBar::sub-line:vertical:hover,
+QTreeWidget#propgrid QScrollBar::add-line:vertical:hover {
+    background: #4a4a52; }
 QTreeWidget#propgrid QScrollBar::add-page:vertical,
-QTreeWidget#propgrid QScrollBar::sub-page:vertical { background: transparent; }
+QTreeWidget#propgrid QScrollBar::sub-page:vertical { background: #1e1e1e; }
 """
 # absolute paths to the arrow assets (QSS url() is cwd-relative otherwise);
-# replace the UP placeholder first — it contains the DOWN one as a substring
+# replace the compound placeholders first — they contain _ARROW_PNG_ as a
+# substring
 GRID_QSS = GRID_QSS.replace(
     "_UP_ARROW_PNG_", str(Path(__file__).parent / "assets" / "up_arrow.png"))
+GRID_QSS = GRID_QSS.replace(
+    "_DOWN_ARROW_PNG_", str(Path(__file__).parent / "assets" / "down_arrow.png"))
 GRID_QSS = GRID_QSS.replace(
     "_ARROW_PNG_", str(Path(__file__).parent / "assets" / "down_arrow.png"))
 
