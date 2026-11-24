@@ -35,9 +35,12 @@ class KnobRow(QWidget):
         w, h = self.width(), self.height()
         kr = min(w * 0.10, h * 0.34)
         kcy = h * 0.42
+        # center each knob over the outer key columns of the grid below
+        # (grid: 3 cols, 14px spacing, same side margins as this row's parent)
+        colw = (w - 2 * 14) / 3
         self._knob_rects.clear()
         for i, eid in enumerate(ENCODER_IDS):
-            kcx = w * (0.32 + 0.36 * i)
+            kcx = colw * 0.5 if i == 0 else w - colw * 0.5
             rect = QRectF(kcx - kr, kcy - kr, 2 * kr, 2 * kr)
             self._knob_rects[eid] = rect
             self._paint_knob(p, eid, rect)
@@ -78,9 +81,10 @@ class KnobRow(QWidget):
             fm.setPointSizeF(8.5)
             p.setFont(fm)
             p.setPen(QColor(DIM))
-            hint = f"↺ {binding.ccw.summary() if binding.ccw else ''}   {binding.cw.summary() if binding.cw else ''} ↻"
-            p.drawText(QRectF(c.x() - r - 40, rect.bottom() + 30, 2 * r + 80, 16),
-                       Qt.AlignHCenter, " ".join(hint.split()))
+            left = binding.ccw.summary() if binding.ccw else ""
+            right = binding.cw.summary() if binding.cw else ""
+            p.drawText(QRectF(c.x() - r - 60, rect.bottom() + 30, 2 * r + 120, 16),
+                       Qt.AlignHCenter, f"↺ {left}   {right} ↻")
 
     def mousePressEvent(self, e):
         for eid, rect in self._knob_rects.items():

@@ -26,10 +26,11 @@ QLabel#faint {{ color: {FAINT}; }}
 QLabel#statusbar {{ background: {STATUS_BG}; color: #ffffff; padding: 4px 12px;
     border-radius: 4px; }}
 QComboBox, QLineEdit, QPlainTextEdit {{
-    background: {CARD}; border: 1px solid {BORDER}; border-radius: 4px;
-    padding: 6px 8px; color: {TEXT}; selection-background-color: {ACCENT_DEFAULT}; }}
-QComboBox::drop-down {{ border: none; width: 22px; }}
-QComboBox QAbstractItemView {{ background: {CARD}; border: 1px solid {BORDER};
+    background: #3c3c3c; border: 1px solid #3c3c3c; border-radius: 2px;
+    padding: 5px 8px; color: {TEXT}; selection-background-color: {ACCENT_DEFAULT}; }}
+QComboBox:focus, QLineEdit:focus, QPlainTextEdit:focus {{ border: 1px solid #007acc; }}
+QComboBox::drop-down {{ border: none; width: 20px; }}
+QComboBox QAbstractItemView {{ background: #3c3c3c; border: 1px solid {BORDER};
     selection-background-color: #37373d; }}
 QPushButton {{ background: {CARD}; border: 1px solid {BORDER}; border-radius: 4px;
     padding: 7px 14px; color: {TEXT}; }}
