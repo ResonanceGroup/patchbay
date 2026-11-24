@@ -12,10 +12,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import QPoint, Qt, QRect, QSize, Signal
-from PySide6.QtGui import QColor, QFont, QPen, QPalette
+from PySide6.QtGui import QColor, QFont, QPainter, QPen, QPalette, QPolygon
 from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QFrame,
                                QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-                               QPushButton, QStackedWidget, QStyledItemDelegate,
+                               QPushButton, QScrollBar, QStackedWidget,
+                               QStyledItemDelegate,
                                QStyleOptionViewItem, QToolButton, QTreeWidget,
                                QTreeWidgetItem, QVBoxLayout, QWidget)
 
@@ -100,6 +101,88 @@ class ChordRecorder(QPushButton):
         self.armed = False
         self.setText("● rec")
         self.captured.emit(chord)
+
+
+class WinScrollBar(QScrollBar):
+    """Windows-style scrollbar: dark track, chunky handle, up/down arrow
+    buttons. Painted directly — Qt 6 QSS cannot render scrollbar arrows and
+    the Windows QStyle segfaults under a QSS ancestor."""
+
+    BTN = 14
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedWidth(16)
+        self.setMouseTracking(True)
+        self._hover = 0
+        self._drag_off = None
+
+    def _rects(self):
+        w, h = self.width(), self.height()
+        top = QRect(0, 0, w, self.BTN)
+        bot = QRect(0, h - self.BTN, w, self.BTN)
+        ttop, theight = self.BTN, h - 2 * self.BTN
+        rng = self.maximum() - self.minimum()
+        page = max(1, self.pageStep())
+        if rng <= 0:
+            hh, yy = theight, ttop
+        else:
+            hh = max(24, int(theight * page / (rng + page)))
+            span = theight - hh
+            yy = ttop + int(span * (self.value() - self.minimum()) / rng)
+        return top, bot, QRect(2, yy, w - 4, hh), (ttop, theight)
+
+    def paintEvent(self, e):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        p.fillRect(self.rect(), QColor("#1e1e1e"))
+        top, bot, handle, _ = self._rects()
+        for r, idx in ((top, 1), (bot, 2)):
+            p.fillRect(r, QColor("#4a4a52") if self._hover == idx
+                       else QColor("#3e3e42"))
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(QColor("#d4d4d4"))
+        p.drawPolygon(QPolygon([QPoint(top.x() + 4, top.y() + 9),
+                                QPoint(top.x() + 8, top.y() + 4),
+                                QPoint(top.x() + 12, top.y() + 9)]))
+        p.drawPolygon(QPolygon([QPoint(bot.x() + 4, bot.y() + 5),
+                                QPoint(bot.x() + 12, bot.y() + 5),
+                                QPoint(bot.x() + 8, bot.y() + 10)]))
+        p.setBrush(QColor("#3e3e42"))
+        p.drawRoundedRect(handle, 2, 2)
+
+    def mousePressEvent(self, e):
+        top, bot, handle, _ = self._rects()
+        pos = e.position().toPoint()
+        if top.contains(pos):
+            self.setValue(self.value() - self.singleStep())
+        elif bot.contains(pos):
+            self.setValue(self.value() + self.singleStep())
+        elif handle.contains(pos):
+            self._drag_off = pos.y() - handle.top()
+        else:
+            super().mousePressEvent(e)
+
+    def mouseMoveEvent(self, e):
+        top, bot, handle, (ttop, theight) = self._rects()
+        pos = e.position().toPoint()
+        if self._drag_off is not None:
+            rng = self.maximum() - self.minimum()
+            hh = handle.height()
+            yy = max(ttop, min(ttop + theight - hh, pos.y() - self._drag_off))
+            if theight > hh:
+                self.setValue(self.minimum() +
+                              round((yy - ttop) * rng / (theight - hh)))
+            return
+        h = 1 if top.contains(pos) else 2 if bot.contains(pos) else 0
+        if h != self._hover:
+            self._hover = h
+            self.update()
+        super().mouseMoveEvent(e)
+
+    def mouseReleaseEvent(self, e):
+        self._drag_off = None
+        super().mouseReleaseEvent(e)
 
 
 class GridComboBox(QComboBox):
@@ -260,22 +343,6 @@ QTreeWidget#propgrid QComboBox[open="true"]::down-arrow {
 QTreeWidget#propgrid QLineEdit:focus { border: 1px solid #007acc; }
 QTreeWidget#propgrid QComboBox QAbstractItemView { background: #2d2d30;
     border: 1px solid #3f3f46; selection-background-color: #3399ff; }
-QTreeWidget#propgrid QScrollBar:vertical { background: #1e1e1e; width: 16px;
-    margin: 0; border: none; }
-QTreeWidget#propgrid QScrollBar::handle:vertical { background: #3e3e42;
-    min-height: 30px; border-radius: 2px; margin: 2px 2px; }
-QTreeWidget#propgrid QScrollBar::handle:vertical:hover { background: #4a4a52; }
-QTreeWidget#propgrid QScrollBar::sub-line:vertical { border: none;
-    background: #3e3e42; height: 16px; subcontrol-position: top;
-    subcontrol-origin: margin; image: url(_UP_ARROW_PNG_); }
-QTreeWidget#propgrid QScrollBar::add-line:vertical { border: none;
-    background: #3e3e42; height: 16px; subcontrol-position: bottom;
-    subcontrol-origin: margin; image: url(_DOWN_ARROW_PNG_); }
-QTreeWidget#propgrid QScrollBar::sub-line:vertical:hover,
-QTreeWidget#propgrid QScrollBar::add-line:vertical:hover {
-    background: #4a4a52; }
-QTreeWidget#propgrid QScrollBar::add-page:vertical,
-QTreeWidget#propgrid QScrollBar::sub-page:vertical { background: #1e1e1e; }
 """
 # absolute paths to the arrow assets (QSS url() is cwd-relative otherwise);
 # replace the compound placeholders first — they contain _ARROW_PNG_ as a
@@ -284,6 +351,10 @@ GRID_QSS = GRID_QSS.replace(
     "_UP_ARROW_PNG_", str(Path(__file__).parent / "assets" / "up_arrow.png"))
 GRID_QSS = GRID_QSS.replace(
     "_DOWN_ARROW_PNG_", str(Path(__file__).parent / "assets" / "down_arrow.png"))
+GRID_QSS = GRID_QSS.replace(
+    "_UP_BTN_PNG_", str(Path(__file__).parent / "assets" / "up_btn.png"))
+GRID_QSS = GRID_QSS.replace(
+    "_DOWN_BTN_PNG_", str(Path(__file__).parent / "assets" / "down_btn.png"))
 GRID_QSS = GRID_QSS.replace(
     "_ARROW_PNG_", str(Path(__file__).parent / "assets" / "down_arrow.png"))
 
@@ -406,6 +477,7 @@ class BindingEditor(QFrame):
 
         self.grid = PropertyGrid()
         self.grid.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.grid.setVerticalScrollBar(WinScrollBar(self.grid))
         lay.addWidget(self.grid, 1)
         self.grid.currentItemChanged.connect(self._help_update)
 
