@@ -435,7 +435,7 @@ class BindingEditor(QFrame):
         self.categorized = True
 
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(10, 8, 16, 8)
+        lay.setContentsMargins(10, 8, 24, 8)
         lay.setSpacing(6)
 
         # panel title, same style as the Profiles heading
