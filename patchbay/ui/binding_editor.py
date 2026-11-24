@@ -392,7 +392,7 @@ class BindingEditor(QFrame):
         # help/description panel
         self.help_panel = QFrame()
         self.help_panel.setStyleSheet(
-            "QFrame#helppanel { border-top: 1px solid #333336; }")
+            "QFrame#helppanel { border: 1px solid #3f3f46; }")
         self.help_panel.setObjectName("helppanel")
         hp = QVBoxLayout(self.help_panel)
         hp.setContentsMargins(6, 4, 6, 4)
