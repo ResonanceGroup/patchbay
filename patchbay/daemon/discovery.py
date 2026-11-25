@@ -80,15 +80,32 @@ def scan(cfg: PadConfig | None = None) -> list[Candidate]:
     return out
 
 
+def _best_interface(cands: list[Candidate]):
+    """Pick the interface that actually emits our surrogate keys.
+
+    The pad exposes several HID interfaces (keyboard / keyboard / mouse). Only
+    one carries the F13-F24 surrogates, so score each by how many surrogate
+    codes it advertises and grab that one.
+    """
+    from .surrogates import DECODE
+    surrogate_codes = set(DECODE.keys())
+    best, best_score = None, -1
+    for c in cands:
+        try:
+            keys = set(InputDevice(c.path).capabilities().get(ecodes.EV_KEY, []))
+            score = len(keys & surrogate_codes)
+        except OSError:
+            score = -1
+        if score > best_score:
+            best, best_score = c, score
+    return best
+
+
 def find_pad(cfg: PadConfig) -> InputDevice | None:
     """Best pad device: USB preferred over Bluetooth when both present."""
-    usb = bt = None
-    for c in scan(cfg):
-        if not matches(c, cfg):
-            continue
-        if c.transport == USB and usb is None:
-            usb = c
-        elif c.transport == BT and bt is None:
-            bt = c
-    chosen = usb or bt
-    return InputDevice(chosen.path) if chosen else None
+    matched = [c for c in scan(cfg) if matches(c, cfg)]
+    for transport in (USB, BT):
+        best = _best_interface([c for c in matched if c.transport == transport])
+        if best is not None:
+            return InputDevice(best.path)
+    return None
