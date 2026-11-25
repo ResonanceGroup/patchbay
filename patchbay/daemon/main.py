@@ -79,8 +79,15 @@ def main(argv: list[str] | None = None) -> int:
                         action = engine.action_for_key(target[1])
                     else:
                         action = engine.action_for_encoder(target[1], target[2])
+                    prof = engine.active_profile()
+                    pname = prof.name if prof else "(no profile)"
                     if action is not None:
+                        print(f"[{pname} L{engine.layer+1}] "
+                              f"{'/'.join(target[1:])} -> {action.summary()}")
                         injector.execute(action)
+                    else:
+                        print(f"[{pname} L{engine.layer+1}] "
+                              f"{'/'.join(target[1:])} -> (unbound)")
             except (OSError, IOError):
                 print("pad disconnected; re-scanning...", file=sys.stderr)
                 try:

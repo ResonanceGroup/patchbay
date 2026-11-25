@@ -17,6 +17,11 @@ from ..core.device_config import PadConfig
 USB = "usb"
 BT = "bluetooth"
 
+# Kernel input bus-type numbers (linux/input.h). evdev does not always expose
+# these as named constants, so use the stable numeric values.
+BUS_USB = 3
+BUS_BLUETOOTH = 5
+
 
 @dataclass
 class Candidate:
@@ -43,8 +48,8 @@ def _mac_of(dev: InputDevice) -> str | None:
 
 def classify(dev: InputDevice) -> Candidate:
     info = dev.info
-    bt = info.bustype == ecodes.EV_BUS_BLUETOOTH
-    usb = info.bustype == ecodes.EV_BUS_USB
+    bt = info.bustype == BUS_BLUETOOTH
+    usb = info.bustype == BUS_USB
     transport = BT if bt else (USB if usb else "other")
     return Candidate(
         path=dev.path, name=dev.name, transport=transport,
