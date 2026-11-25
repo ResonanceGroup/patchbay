@@ -1,11 +1,20 @@
 """Profile model: one file per application, three layers each.
 
-Layout of the pad (fixed hardware):
-  E1  E2                 two clickable encoders
-  K01 K02 K03            3 columns x 4 rows
-  K04 K05 K06
-  K07 K08 K09
-  K10 K11 K12
+KEY_IDS (K01..K12) are the firmware's surrogate slots — the daemon decodes a
+physical control to a Kxx id, and profiles bind actions to those ids. The
+physical arrangement of those ids on the pad is NOT reading order: measured
+empirically (pressing each button and logging the decoded id), the pad is a
+4-row x 3-col grid laid out as:
+
+  E1        E2           two clickable encoders (left, right)
+  K04 K08 K12
+  K03 K07 K11
+  K02 K06 K10
+  K01 K05 K09
+
+PHYSICAL_KEY_ORDER lists the ids in the order they appear on the pad, row by
+row, so the GUI can draw a truthful replica. The firmware grid itself is 3x4
+(see firmware/compile.py); the pad's physical orientation rotates it.
 """
 from __future__ import annotations
 
@@ -19,6 +28,14 @@ from .actions import action_from_dict
 KEY_IDS = [f"K{i:02d}" for i in range(1, 13)]
 ENCODER_IDS = ["E1", "E2"]
 LAYER_COUNT = 3
+
+# Ids in physical pad order (4 rows x 3 cols), measured 2026-11-25.
+PHYSICAL_KEY_ORDER = [
+    "K04", "K08", "K12",
+    "K03", "K07", "K11",
+    "K02", "K06", "K10",
+    "K01", "K05", "K09",
+]
 
 
 @dataclass

@@ -62,6 +62,17 @@ def detect() -> int:
     return 0
 
 
+def _profiles_sig(d: Path) -> float:
+    """Newest mtime across profile files (ignoring UI state), for hot-reload."""
+    try:
+        return max(
+            (f.stat().st_mtime for f in d.glob("*.json") if f.name != "_state.json"),
+            default=0.0,
+        )
+    except OSError:
+        return 0.0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="patchbay-daemon")
     ap.add_argument("--profiles", default="profiles", type=Path)
@@ -76,10 +87,9 @@ def main(argv: list[str] | None = None) -> int:
     cfg = PadConfig.load()
     engine = Engine(args.profiles)
     if args.pin:
-        for p in engine.profiles:
-            if p.name == args.pin or p.app == args.pin:
-                engine.pinned = p
-                break
+        if not engine.set_pin(args.pin):
+            print(f"warning: no profile matches --pin {args.pin!r}",
+                  file=sys.stderr)
     injector = Injector()
 
     try:
@@ -103,11 +113,17 @@ def main(argv: list[str] | None = None) -> int:
                     except OSError as e:
                         print(f"grab failed on {d.path}: {e}",
                               file=sys.stderr)
+                last_sig = _profiles_sig(args.profiles)
                 while True:
-                    for key, _ in sel.select():
+                    for key, _ in sel.select(timeout=1.0):
                         dev = key.data
                         for ev in dev.read():
                             handle(ev, engine, injector)
+                    sig = _profiles_sig(args.profiles)
+                    if sig != last_sig:
+                        last_sig = sig
+                        engine.reload()
+                        print("profiles reloaded (file changed)")
             except (OSError, IOError):
                 print("pad disconnected; re-scanning...", file=sys.stderr)
                 time.sleep(0.5)

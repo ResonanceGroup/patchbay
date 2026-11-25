@@ -17,10 +17,31 @@ class Engine:
         self.profiles_dir = Path(profiles_dir)
         self.profiles = load_profiles(self.profiles_dir)
         self.pinned = pinned
+        self.pin_key: str | None = None
+        if pinned is not None:
+            self.pin_key = pinned.name or pinned.app
         self.layer = 0
 
+    def set_pin(self, key: str) -> bool:
+        """Pin by profile name or app name. Returns True if found."""
+        self.pin_key = key
+        for p in self.profiles:
+            if p.name == key or p.app == key:
+                self.pinned = p
+                return True
+        self.pinned = None
+        return False
+
     def reload(self):
+        """Reload profiles from disk, re-resolving the pinned one by name."""
         self.profiles = load_profiles(self.profiles_dir)
+        if self.pin_key is not None:
+            for p in self.profiles:
+                if p.name == self.pin_key or p.app == self.pin_key:
+                    self.pinned = p
+                    break
+            else:
+                self.pinned = None
 
     def cycle_layer(self, delta: int):
         self.layer = (self.layer + delta) % LAYER_COUNT

@@ -11,7 +11,7 @@ from PySide6.QtGui import (QBrush, QColor, QFont, QLinearGradient, QPainter,
 from PySide6.QtWidgets import (QGridLayout, QHBoxLayout, QLabel, QPushButton,
                                QSizePolicy, QVBoxLayout, QWidget)
 
-from ..core.profile import ENCODER_IDS, KEY_IDS
+from ..core.profile import ENCODER_IDS, KEY_IDS, PHYSICAL_KEY_ORDER
 from .theme import BORDER, DIM, FAINT, KEY_HOVER, PANEL, TEXT, key_qss
 
 
@@ -154,7 +154,9 @@ class KeypadWidget(QWidget):
         grid.setSpacing(14)
         self.key_btns: dict[str, QPushButton] = {}
         self.key_lbls: dict[str, tuple[QLabel, QLabel]] = {}
-        for idx, kid in enumerate(KEY_IDS):
+        # Place ids in PHYSICAL pad order so the replica matches the hardware
+        # (top-left cell = K04, etc.), not firmware reading order.
+        for idx, kid in enumerate(PHYSICAL_KEY_ORDER):
             r, c = divmod(idx, 3)
             b = QPushButton()
             b.setCheckable(True)
