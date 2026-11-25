@@ -8,30 +8,30 @@
   },
   "accent": "#34a853",
   "name": "KiCad",
-  "_physical_map": "Row1: K04 K08 K12 | Row2: K03 K07 K11 | Row3: K02 K06 K10 | Row4: K01 K05 K09 (measured 2026-11-25). Chords are KiCad 10.0.1 DEFAULTS per Jason's 'Keypad Shortcuts.png' diagram.",
+  "_physical_map": "Pad ids in physical order (top->bottom, left->right): Row1 K04 K08 K12 | Row2 K03 K07 K11 | Row3 K02 K06 K10 | Row4 K01 K05 K09 (measured 2026-11-25). Mappings below are from ~/Desktop/KiCad-Macropad-Shortcut-List.md (which numbers positions top-left-first as K01..K12); each list position was mapped to the pad id at that physical position. Chords are the EFFECTIVE KiCad shortcuts (the daemon injects them directly, replacing input-remapper).",
   "layers": [
     {
       "name": "PCB Routing",
       "keys": {
-        "K01": { "label": "Router settings", "action": { "type": "keys", "keys": ["ctrl", "shift", ","] } },
-        "K02": { "label": "Snap grid", "action": { "type": "keys", "keys": ["shift"] } },
-        "K03": { "label": "Drag", "action": { "type": "keys", "keys": ["d"] } },
+        "K01": { "label": "Ctrl", "action": { "type": "keys", "keys": ["ctrl"] } },
+        "K02": { "label": "Shift", "action": { "type": "keys", "keys": ["shift"] } },
+        "K03": { "label": "Highlight", "action": { "type": "keys", "keys": ["d"] } },
         "K04": { "label": "Cancel", "action": { "type": "keys", "keys": ["escape"] } },
-        "K05": { "label": "Unfill zones", "action": { "type": "keys", "keys": ["ctrl", "b"] } },
-        "K06": { "label": "Grid smaller", "action": { "type": "keys", "keys": ["n"] } },
-        "K07": { "label": "Prev width", "action": { "type": "keys", "keys": ["shift", "w"] } },
-        "K08": { "label": "Via", "action": { "type": "keys", "keys": ["ctrl", "shift", "x"] } },
-        "K09": { "label": "Fill zones", "action": { "type": "keys", "keys": ["b"] } },
-        "K10": { "label": "Grid larger", "action": { "type": "keys", "keys": ["shift", "n"] } },
-        "K11": { "label": "Next width", "action": { "type": "keys", "keys": ["w"] } },
-        "K12": { "label": "Route track", "action": { "type": "keys", "keys": ["x"] } }
+        "K05": { "label": "Delete", "action": { "type": "keys", "keys": ["delete"] } },
+        "K06": { "label": "Grid +", "action": { "type": "keys", "keys": ["n"] } },
+        "K07": { "label": "Width -", "action": { "type": "keys", "keys": ["shift", "w"] } },
+        "K08": { "label": "Via", "action": { "type": "keys", "keys": ["v"] } },
+        "K09": { "label": "Select", "action": { "type": "keys", "keys": ["u"] } },
+        "K10": { "label": "Grid -", "action": { "type": "keys", "keys": ["shift", "n"] } },
+        "K11": { "label": "Width +", "action": { "type": "keys", "keys": ["w"] } },
+        "K12": { "label": "Route", "action": { "type": "keys", "keys": ["x"] } }
       },
       "encoders": {
         "E1": {
           "label": "Layers",
           "ccw": { "type": "keys", "keys": ["-"] },
           "cw": { "type": "keys", "keys": ["shift", "="] },
-          "press": { "type": "keys", "keys": ["shift", "v"] }
+          "press": { "type": "keys", "keys": ["v"] }
         },
         "E2": {
           "label": "Visibility",
@@ -44,25 +44,25 @@
     {
       "name": "Differential Pair",
       "keys": {
-        "K01": { "label": "Router settings", "action": { "type": "keys", "keys": ["ctrl", "shift", ","] } },
-        "K02": { "label": "Snap grid", "action": { "type": "keys", "keys": ["shift"] } },
-        "K03": { "label": "Drag", "action": { "type": "keys", "keys": ["d"] } },
+        "K01": { "label": "Ctrl", "action": { "type": "keys", "keys": ["ctrl"] } },
+        "K02": { "label": "Shift", "action": { "type": "keys", "keys": ["shift"] } },
+        "K03": { "label": "Highlight", "action": { "type": "keys", "keys": ["d"] } },
         "K04": { "label": "Cancel", "action": { "type": "keys", "keys": ["escape"] } },
-        "K05": { "label": "Unfill zones", "action": { "type": "keys", "keys": ["ctrl", "b"] } },
-        "K06": { "label": "Grid smaller", "action": { "type": "keys", "keys": ["n"] } },
-        "K07": { "label": "Tune single track", "action": { "type": "keys", "keys": ["7"] } },
-        "K08": { "label": "Via", "action": { "type": "keys", "keys": ["ctrl", "shift", "x"] } },
-        "K09": { "label": "Fill zones", "action": { "type": "keys", "keys": ["b"] } },
-        "K10": { "label": "Grid larger", "action": { "type": "keys", "keys": ["shift", "n"] } },
-        "K11": { "label": "Tune diff skew", "action": { "type": "keys", "keys": ["9"] } },
-        "K12": { "label": "Diff pair", "action": { "type": "keys", "keys": ["6"] } }
+        "K05": { "label": "Delete", "action": { "type": "keys", "keys": ["delete"] } },
+        "K06": { "label": "Grid +", "action": { "type": "keys", "keys": ["n"] } },
+        "K07": { "label": "Tune", "action": { "type": "keys", "keys": ["7"] } },
+        "K08": { "label": "Via", "action": { "type": "keys", "keys": ["v"] } },
+        "K09": { "label": "Select", "action": { "type": "keys", "keys": ["u"] } },
+        "K10": { "label": "Grid -", "action": { "type": "keys", "keys": ["shift", "n"] } },
+        "K11": { "label": "Skew", "action": { "type": "keys", "keys": ["9"] } },
+        "K12": { "label": "Diff", "action": { "type": "keys", "keys": ["6"] } }
       },
       "encoders": {
         "E1": {
           "label": "Layers",
           "ccw": { "type": "keys", "keys": ["-"] },
           "cw": { "type": "keys", "keys": ["shift", "="] },
-          "press": { "type": "keys", "keys": ["shift", "v"] }
+          "press": { "type": "keys", "keys": ["v"] }
         },
         "E2": {
           "label": "Visibility",
@@ -73,27 +73,27 @@
       }
     },
     {
-      "name": "Reserved",
+      "name": "Standalone Via",
       "keys": {
-        "K01": { "label": "Router settings", "action": { "type": "keys", "keys": ["ctrl", "shift", ","] } },
-        "K02": { "label": "Snap grid", "action": { "type": "keys", "keys": ["shift"] } },
-        "K03": { "label": "Drag", "action": { "type": "keys", "keys": ["d"] } },
+        "K01": { "label": "Ctrl", "action": { "type": "keys", "keys": ["ctrl"] } },
+        "K02": { "label": "Shift", "action": { "type": "keys", "keys": ["shift"] } },
+        "K03": { "label": "Highlight", "action": { "type": "keys", "keys": ["d"] } },
         "K04": { "label": "Cancel", "action": { "type": "keys", "keys": ["escape"] } },
-        "K05": { "label": "Unfill zones", "action": { "type": "keys", "keys": ["ctrl", "b"] } },
-        "K06": { "label": "Grid smaller", "action": { "type": "keys", "keys": ["n"] } },
-        "K07": { "label": "Prev width", "action": { "type": "keys", "keys": ["shift", "w"] } },
+        "K05": { "label": "Delete", "action": { "type": "keys", "keys": ["delete"] } },
+        "K06": { "label": "Grid +", "action": { "type": "keys", "keys": ["n"] } },
+        "K07": { "label": "Width -", "action": { "type": "keys", "keys": ["shift", "w"] } },
         "K08": { "label": "Via", "action": { "type": "keys", "keys": ["ctrl", "shift", "x"] } },
-        "K09": { "label": "Fill zones", "action": { "type": "keys", "keys": ["b"] } },
-        "K10": { "label": "Grid larger", "action": { "type": "keys", "keys": ["shift", "n"] } },
-        "K11": { "label": "Next width", "action": { "type": "keys", "keys": ["w"] } },
-        "K12": { "label": "Route track", "action": { "type": "keys", "keys": ["x"] } }
+        "K09": { "label": "Select", "action": { "type": "keys", "keys": ["u"] } },
+        "K10": { "label": "Grid -", "action": { "type": "keys", "keys": ["shift", "n"] } },
+        "K11": { "label": "Width +", "action": { "type": "keys", "keys": ["w"] } },
+        "K12": { "label": "Route", "action": { "type": "keys", "keys": ["x"] } }
       },
       "encoders": {
         "E1": {
           "label": "Layers",
           "ccw": { "type": "keys", "keys": ["-"] },
           "cw": { "type": "keys", "keys": ["shift", "="] },
-          "press": { "type": "keys", "keys": ["shift", "v"] }
+          "press": { "type": "keys", "keys": ["v"] }
         },
         "E2": {
           "label": "Visibility",

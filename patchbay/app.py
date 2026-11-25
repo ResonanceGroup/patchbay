@@ -92,14 +92,41 @@ class PatchbayApp(Gtk.Application):
         self.ui = self._spawn("patchbay.ui", "--profile")
 
     def _raise_ui(self) -> None:
-        # Bring the existing editor to the front / un-minimize it.
+        # Bring the existing editor to the front / un-minimize it. Target the
+        # editor by the PID we spawned it with — `search --name ^Patchbay$` also
+        # matches this tray's own hidden 1x1 helper window, and activating that
+        # does nothing (and --sync can hang). Skip any 1x1 window as a guard.
+        if self.ui is None:
+            return
+        wids: list[str] = []
         try:
-            subprocess.run(
-                ["xdotool", "search", "--name", "^Patchbay$",
-                 "windowactivate", "--sync"],
-                check=False, timeout=5)
+            r = subprocess.run(["xdotool", "search", "--pid", str(self.ui.pid)],
+                               capture_output=True, text=True, timeout=5)
+            wids = r.stdout.split()
         except Exception:
-            pass
+            wids = []
+        if not wids:
+            try:
+                r = subprocess.run(["xdotool", "search", "--name", "^Patchbay$"],
+                                   capture_output=True, text=True, timeout=5)
+                wids = r.stdout.split()
+            except Exception:
+                wids = []
+        for wid in wids:
+            try:
+                g = subprocess.run(["xdotool", "getwindowgeometry", wid],
+                                   capture_output=True, text=True,
+                                   timeout=5).stdout
+                if "1x1" in g:
+                    continue
+                subprocess.run(["xdotool", "windowmap", wid],
+                               check=False, timeout=5)
+                subprocess.run(["xdotool", "windowactivate", wid],
+                               check=False, timeout=5)
+                subprocess.run(["xdotool", "windowraise", wid],
+                               check=False, timeout=5)
+            except Exception:
+                pass
 
     def quit(self, *_a) -> None:
         for p in (self.daemon, self.ui):

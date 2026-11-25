@@ -552,7 +552,7 @@ class BindingEditor(QFrame):
         self.hint.show()
 
     # ---- action editor wiring ----
-    def _add_action(self, cat, action, setv):
+    def _add_action(self, cat, action, setv, prefix=""):
         combo = GridComboBox()
         combo.setMinimumHeight(26)
         for _, tname in TYPE_NAMES:
@@ -571,14 +571,14 @@ class BindingEditor(QFrame):
             i = stack.media_combo.findData(action.key)
             stack.media_combo.setCurrentIndex(max(0, i))
 
-        self.grid.add_property(cat, "Type", combo,
+        self.grid.add_property(cat, prefix + "Type", combo,
                                "What this control does")
-        vitem = self.grid.add_property(cat, VALUE_NAME[TYPE_NAMES[idx][0]],
+        vitem = self.grid.add_property(cat, prefix + VALUE_NAME[TYPE_NAMES[idx][0]],
                                        stack, VALUE_DESC[TYPE_NAMES[idx][0]])
 
         def on_type(i):
             stack.setCurrentIndex(i)
-            vitem.setText(0, VALUE_NAME[TYPE_NAMES[i][0]])
+            vitem.setText(0, prefix + VALUE_NAME[TYPE_NAMES[i][0]])
             vitem.setData(0, Qt.UserRole + 2, VALUE_DESC[TYPE_NAMES[i][0]])
             _commit()
 
@@ -618,13 +618,13 @@ class BindingEditor(QFrame):
             self.grid.add_property(cat, "Label", self.label_edit,
                                    "Text shown on the control")
 
-        def gen_action(cat, attr, sec):
+        def gen_action(cat, attr, sec, prefix=""):
             act = getattr(b, attr) if enc else b.action
             self._add_action(cat, act,
                              lambda a, at=attr: (
                                  setattr(b, at, a) if enc
                                  else setattr(b, "action", a))
-                             or self.binding_changed.emit())
+                             or self.binding_changed.emit(), prefix)
 
         if enc:
             if self.categorized:
@@ -634,9 +634,10 @@ class BindingEditor(QFrame):
                     gen_action(self.grid.add_category(sec), attr, sec)
             else:
                 gen_label(None)
-                for attr, sec in (("cw", "Turn right"), ("ccw", "Turn left"),
-                                  ("press", "Press")):
-                    gen_action(None, attr, sec)
+                for attr, sec, pre in (("cw", "Turn right", "Right "),
+                                       ("ccw", "Turn left", "Left "),
+                                       ("press", "Press", "Press ")):
+                    gen_action(None, attr, sec, pre)
                 self._sort_flat()
         else:
             if self.categorized:
@@ -648,12 +649,20 @@ class BindingEditor(QFrame):
                 self._sort_flat()
 
     def _sort_flat(self):
-        # takeTopLevelItem removes WITHOUT deleting (clear() would destroy the
-        # items and their widgets, leaving dangling references).
-        items = [self.grid.takeTopLevelItem(0)
-                 for _ in range(self.grid.topLevelItemCount())]
-        for it in sorted(items, key=lambda x: x.text(0)):
+        # Reorder top-level rows alphabetically. takeTopLevelItem removes
+        # WITHOUT deleting (clear() would destroy the items + their widgets).
+        # But removing an item detaches its column-1 setItemWidget control, so
+        # capture each widget first and re-apply it after re-adding — otherwise
+        # the alphabetical view shows only the row names, no value controls.
+        n = self.grid.topLevelItemCount()
+        rows = [(self.grid.topLevelItem(i).text(0),
+                 self.grid.itemWidget(self.grid.topLevelItem(i), 1))
+                for i in range(n)]
+        items = [self.grid.takeTopLevelItem(0) for _ in range(n)]
+        for (name, w), it in sorted(zip(rows, items), key=lambda p: p[0][0]):
             self.grid.addTopLevelItem(it)
+            if w is not None:
+                self.grid.setItemWidget(it, 1, w)
 
     def _rebuild(self):
         b = self._binding_ref
