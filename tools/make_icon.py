@@ -10,12 +10,12 @@ from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtCore import Qt
 
 ASSETS = Path(__file__).resolve().parents[1] / "patchbay" / "assets"
-SVG = ASSETS / "patchbay.svg"
 SIZES = (16, 22, 24, 32, 48, 64, 128, 256)
+SOURCES = ("patchbay", "patchbay-tray")  # dark (window) + light (tray/launcher)
 
 
-def render(size: int) -> QImage:
-    r = QSvgRenderer(str(SVG))
+def render(svg: Path, size: int) -> QImage:
+    r = QSvgRenderer(str(svg))
     img = QImage(size, size, QImage.Format_ARGB32)
     img.fill(Qt.transparent)
     p = QPainter(img)
@@ -26,11 +26,12 @@ def render(size: int) -> QImage:
 
 def main() -> None:
     app = QGuiApplication([])
-    for size in SIZES:
-        render(size).save(str(ASSETS / f"patchbay-{size}.png"))
-    render(256).save(str(ASSETS / "patchbay.png"))
-    print("wrote", ", ".join(f"patchbay-{s}.png" for s in SIZES),
-          "+ patchbay.png to", ASSETS)
+    for name in SOURCES:
+        svg = ASSETS / f"{name}.svg"
+        for size in SIZES:
+            render(svg, size).save(str(ASSETS / f"{name}-{size}.png"))
+        render(svg, 256).save(str(ASSETS / f"{name}.png"))
+    print("rendered", ", ".join(SOURCES), "PNGs to", ASSETS)
 
 
 if __name__ == "__main__":

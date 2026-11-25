@@ -459,11 +459,9 @@ class BindingEditor(QFrame):
         tb = QHBoxLayout()
         tb.setSpacing(4)
         self.sort_btn = QToolButton()
-        self.sort_btn.setText("⋮⋮")
         self.sort_btn.setCheckable(True)
-        self.sort_btn.setToolTip("Toggle categorized / alphabetical")
-        self.sort_btn.setText("A→Z")
         self.sort_btn.clicked.connect(self._toggle_sort)
+        self._update_sort_btn()
         tb.addWidget(self.sort_btn)
         tb.addStretch(1)
         self.sub = QLabel("")
@@ -525,9 +523,17 @@ class BindingEditor(QFrame):
     def set_accent(self, accent: str):
         self.accent = accent
 
+    def _update_sort_btn(self):
+        if self.categorized:
+            self.sort_btn.setText("Cat")
+            self.sort_btn.setToolTip("Sorted by category — click for A→Z")
+        else:
+            self.sort_btn.setText("A→Z")
+            self.sort_btn.setToolTip("Sorted A→Z — click for category")
+
     def _toggle_sort(self):
         self.categorized = not self.categorized
-        self.sort_btn.setText("Cat" if not self.categorized else "A→Z")
+        self._update_sort_btn()
         if self._binding_ref is not None:
             self._rebuild()
 
@@ -642,9 +648,10 @@ class BindingEditor(QFrame):
                 self._sort_flat()
 
     def _sort_flat(self):
-        items = [self.grid.topLevelItem(i)
-                 for i in range(self.grid.topLevelItemCount())]
-        self.grid.clear()
+        # takeTopLevelItem removes WITHOUT deleting (clear() would destroy the
+        # items and their widgets, leaving dangling references).
+        items = [self.grid.takeTopLevelItem(0)
+                 for _ in range(self.grid.topLevelItemCount())]
         for it in sorted(items, key=lambda x: x.text(0)):
             self.grid.addTopLevelItem(it)
 

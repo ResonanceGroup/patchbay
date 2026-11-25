@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QPoint, QTimer
-from PySide6.QtGui import QColor, QPainter
+from PySide6.QtGui import QColor, QPainter, QIcon
 from PySide6.QtWidgets import (QHBoxLayout, QLabel, QMainWindow,
                                QPushButton, QSizePolicy, QSplitter,
                                QSplitterHandle, QVBoxLayout, QWidget)
@@ -176,6 +176,8 @@ class MainWindow(QMainWindow):
 
         self.setStyleSheet(QSS)
         self.setWindowTitle("Patchbay")
+        self.setWindowIcon(QIcon(str(
+            Path(__file__).parent.parent / "assets" / "patchbay.svg")))
         self.setMinimumSize(880, 540)
 
         central = QWidget()
