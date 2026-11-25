@@ -8,60 +8,33 @@
   },
   "accent": "#34a853",
   "name": "KiCad",
+  "_physical_map": "Row1: K04 K08 K12 | Row2: K03 K07 K11 | Row3: K02 K06 K10 | Row4: K01 K05 K09 (measured 2026-11-25). Chords are KiCad 10.0.1 DEFAULTS per Jason's 'Keypad Shortcuts.png' diagram.",
   "layers": [
     {
       "name": "PCB Routing",
       "keys": {
-        "K01": {
-          "label": "Add track",
-          "action": { "type": "keys", "keys": ["x"] }
-        },
-        "K02": {
-          "label": "Edit width",
-          "action": { "type": "keys", "keys": ["w"] }
-        },
-        "K03": {
-          "label": "Run DRC",
-          "action": { "type": "keys", "keys": ["d"] }
-        },
-        "K04": {
-          "label": "Cancel",
-          "action": { "type": "keys", "keys": ["escape"] }
-        },
-        "K05": {
-          "label": "Delete",
-          "action": { "type": "keys", "keys": ["delete"] }
-        },
-        "K06": {
-          "label": "Next width",
-          "action": { "type": "keys", "keys": ["n"] }
-        },
-        "K07": {
-          "label": "Track width -",
-          "action": { "type": "keys", "keys": ["shift", "w"] }
-        },
-        "K08": {
-          "label": "Add via",
-          "action": { "type": "keys", "keys": ["v"] }
-        },
-        "K09": {
-          "label": "Hide ratsnest",
-          "action": { "type": "keys", "keys": ["u"] }
-        },
-        "K10": {
-          "label": "Grid prev",
-          "action": { "type": "keys", "keys": ["shift", "n"] }
-        }
+        "K01": { "label": "Router settings", "action": { "type": "keys", "keys": ["ctrl", "shift", ","] } },
+        "K02": { "label": "Snap grid", "action": { "type": "keys", "keys": ["shift"] } },
+        "K03": { "label": "Drag", "action": { "type": "keys", "keys": ["d"] } },
+        "K04": { "label": "Cancel", "action": { "type": "keys", "keys": ["escape"] } },
+        "K05": { "label": "Unfill zones", "action": { "type": "keys", "keys": ["ctrl", "b"] } },
+        "K06": { "label": "Grid smaller", "action": { "type": "keys", "keys": ["n"] } },
+        "K07": { "label": "Prev width", "action": { "type": "keys", "keys": ["shift", "w"] } },
+        "K08": { "label": "Via", "action": { "type": "keys", "keys": ["ctrl", "shift", "x"] } },
+        "K09": { "label": "Fill zones", "action": { "type": "keys", "keys": ["b"] } },
+        "K10": { "label": "Grid larger", "action": { "type": "keys", "keys": ["shift", "n"] } },
+        "K11": { "label": "Next width", "action": { "type": "keys", "keys": ["w"] } },
+        "K12": { "label": "Route track", "action": { "type": "keys", "keys": ["x"] } }
       },
       "encoders": {
         "E1": {
-          "label": "Layer",
+          "label": "Layers",
           "ccw": { "type": "keys", "keys": ["-"] },
-          "cw": { "type": "keys", "keys": ["+"] },
-          "press": { "type": "keys", "keys": ["v"] }
+          "cw": { "type": "keys", "keys": ["shift", "="] },
+          "press": { "type": "keys", "keys": ["shift", "v"] }
         },
         "E2": {
-          "label": "Opacity",
+          "label": "Visibility",
           "ccw": { "type": "keys", "keys": ["shift", "["] },
           "cw": { "type": "keys", "keys": ["shift", "]"] },
           "press": { "type": "keys", "keys": ["h"] }
@@ -71,56 +44,28 @@
     {
       "name": "Differential Pair",
       "keys": {
-        "K01": {
-          "label": "Add diff pair",
-          "action": { "type": "keys", "keys": ["6"] }
-        },
-        "K02": {
-          "label": "Edit width",
-          "action": { "type": "keys", "keys": ["w"] }
-        },
-        "K03": {
-          "label": "Run DRC",
-          "action": { "type": "keys", "keys": ["d"] }
-        },
-        "K04": {
-          "label": "Cancel",
-          "action": { "type": "keys", "keys": ["escape"] }
-        },
-        "K05": {
-          "label": "Delete",
-          "action": { "type": "keys", "keys": ["delete"] }
-        },
-        "K06": {
-          "label": "Diff gap",
-          "action": { "type": "keys", "keys": ["9"] }
-        },
-        "K07": {
-          "label": "Tune length",
-          "action": { "type": "keys", "keys": ["7"] }
-        },
-        "K08": {
-          "label": "Add via",
-          "action": { "type": "keys", "keys": ["v"] }
-        },
-        "K09": {
-          "label": "Hide ratsnest",
-          "action": { "type": "keys", "keys": ["u"] }
-        },
-        "K10": {
-          "label": "Grid prev",
-          "action": { "type": "keys", "keys": ["shift", "n"] }
-        }
+        "K01": { "label": "Router settings", "action": { "type": "keys", "keys": ["ctrl", "shift", ","] } },
+        "K02": { "label": "Snap grid", "action": { "type": "keys", "keys": ["shift"] } },
+        "K03": { "label": "Drag", "action": { "type": "keys", "keys": ["d"] } },
+        "K04": { "label": "Cancel", "action": { "type": "keys", "keys": ["escape"] } },
+        "K05": { "label": "Unfill zones", "action": { "type": "keys", "keys": ["ctrl", "b"] } },
+        "K06": { "label": "Grid smaller", "action": { "type": "keys", "keys": ["n"] } },
+        "K07": { "label": "Tune single track", "action": { "type": "keys", "keys": ["7"] } },
+        "K08": { "label": "Via", "action": { "type": "keys", "keys": ["ctrl", "shift", "x"] } },
+        "K09": { "label": "Fill zones", "action": { "type": "keys", "keys": ["b"] } },
+        "K10": { "label": "Grid larger", "action": { "type": "keys", "keys": ["shift", "n"] } },
+        "K11": { "label": "Tune diff skew", "action": { "type": "keys", "keys": ["9"] } },
+        "K12": { "label": "Diff pair", "action": { "type": "keys", "keys": ["6"] } }
       },
       "encoders": {
         "E1": {
-          "label": "Layer",
+          "label": "Layers",
           "ccw": { "type": "keys", "keys": ["-"] },
-          "cw": { "type": "keys", "keys": ["+"] },
-          "press": { "type": "keys", "keys": ["v"] }
+          "cw": { "type": "keys", "keys": ["shift", "="] },
+          "press": { "type": "keys", "keys": ["shift", "v"] }
         },
         "E2": {
-          "label": "Opacity",
+          "label": "Visibility",
           "ccw": { "type": "keys", "keys": ["shift", "["] },
           "cw": { "type": "keys", "keys": ["shift", "]"] },
           "press": { "type": "keys", "keys": ["h"] }
@@ -130,56 +75,28 @@
     {
       "name": "Reserved",
       "keys": {
-        "K01": {
-          "label": "Add track",
-          "action": { "type": "keys", "keys": ["x"] }
-        },
-        "K02": {
-          "label": "Edit width",
-          "action": { "type": "keys", "keys": ["w"] }
-        },
-        "K03": {
-          "label": "Run DRC",
-          "action": { "type": "keys", "keys": ["d"] }
-        },
-        "K04": {
-          "label": "Cancel",
-          "action": { "type": "keys", "keys": ["escape"] }
-        },
-        "K05": {
-          "label": "Delete",
-          "action": { "type": "keys", "keys": ["delete"] }
-        },
-        "K06": {
-          "label": "Next width",
-          "action": { "type": "keys", "keys": ["n"] }
-        },
-        "K07": {
-          "label": "Track width -",
-          "action": { "type": "keys", "keys": ["shift", "w"] }
-        },
-        "K08": {
-          "label": "Add via",
-          "action": { "type": "keys", "keys": ["v"] }
-        },
-        "K09": {
-          "label": "Hide ratsnest",
-          "action": { "type": "keys", "keys": ["u"] }
-        },
-        "K10": {
-          "label": "Grid prev",
-          "action": { "type": "keys", "keys": ["shift", "n"] }
-        }
+        "K01": { "label": "Router settings", "action": { "type": "keys", "keys": ["ctrl", "shift", ","] } },
+        "K02": { "label": "Snap grid", "action": { "type": "keys", "keys": ["shift"] } },
+        "K03": { "label": "Drag", "action": { "type": "keys", "keys": ["d"] } },
+        "K04": { "label": "Cancel", "action": { "type": "keys", "keys": ["escape"] } },
+        "K05": { "label": "Unfill zones", "action": { "type": "keys", "keys": ["ctrl", "b"] } },
+        "K06": { "label": "Grid smaller", "action": { "type": "keys", "keys": ["n"] } },
+        "K07": { "label": "Prev width", "action": { "type": "keys", "keys": ["shift", "w"] } },
+        "K08": { "label": "Via", "action": { "type": "keys", "keys": ["ctrl", "shift", "x"] } },
+        "K09": { "label": "Fill zones", "action": { "type": "keys", "keys": ["b"] } },
+        "K10": { "label": "Grid larger", "action": { "type": "keys", "keys": ["shift", "n"] } },
+        "K11": { "label": "Next width", "action": { "type": "keys", "keys": ["w"] } },
+        "K12": { "label": "Route track", "action": { "type": "keys", "keys": ["x"] } }
       },
       "encoders": {
         "E1": {
-          "label": "Layer",
+          "label": "Layers",
           "ccw": { "type": "keys", "keys": ["-"] },
-          "cw": { "type": "keys", "keys": ["+"] },
-          "press": { "type": "keys", "keys": ["v"] }
+          "cw": { "type": "keys", "keys": ["shift", "="] },
+          "press": { "type": "keys", "keys": ["shift", "v"] }
         },
         "E2": {
-          "label": "Opacity",
+          "label": "Visibility",
           "ccw": { "type": "keys", "keys": ["shift", "["] },
           "cw": { "type": "keys", "keys": ["shift", "]"] },
           "press": { "type": "keys", "keys": ["h"] }
