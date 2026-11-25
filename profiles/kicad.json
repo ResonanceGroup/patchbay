@@ -2,328 +2,189 @@
   "app": "KiCad",
   "match": {
     "wm_class": [
-      "eeschema"
+      "eeschema",
+      "pcbnew"
     ]
   },
   "accent": "#34a853",
+  "name": "KiCad",
   "layers": [
     {
-      "name": "Schematic",
+      "name": "PCB Routing",
       "keys": {
         "K01": {
-          "label": "Undo",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "ctrl",
-              "z"
-            ]
-          }
+          "label": "Add track",
+          "action": { "type": "keys", "keys": ["x"] }
         },
         "K02": {
-          "label": "Redo",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "ctrl",
-              "y"
-            ]
-          }
+          "label": "Edit width",
+          "action": { "type": "keys", "keys": ["w"] }
         },
         "K03": {
-          "label": "Wire",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "w"
-            ]
-          }
+          "label": "Run DRC",
+          "action": { "type": "keys", "keys": ["d"] }
         },
         "K04": {
-          "label": "Symbol",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "a"
-            ]
-          }
+          "label": "Cancel",
+          "action": { "type": "keys", "keys": ["escape"] }
         },
         "K05": {
-          "label": "Move",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "m"
-            ]
-          }
+          "label": "Delete",
+          "action": { "type": "keys", "keys": ["delete"] }
         },
         "K06": {
-          "label": "Rotate",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "r"
-            ]
-          }
+          "label": "Next width",
+          "action": { "type": "keys", "keys": ["n"] }
         },
         "K07": {
-          "label": "Delete",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "delete"
-            ]
-          }
+          "label": "Track width -",
+          "action": { "type": "keys", "keys": ["shift", "w"] }
         },
         "K08": {
-          "label": "Copy",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "c"
-            ]
-          }
+          "label": "Add via",
+          "action": { "type": "keys", "keys": ["v"] }
         },
         "K09": {
-          "label": "Save",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "ctrl",
-              "s"
-            ]
-          }
+          "label": "Hide ratsnest",
+          "action": { "type": "keys", "keys": ["u"] }
         },
         "K10": {
-          "label": "Zoom fit",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "home"
-            ]
-          }
-        },
-        "K11": {
-          "label": "Zoom in",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "+"
-            ]
-          }
-        },
-        "K12": {
-          "label": "Zoom out",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "-"
-            ]
-          }
+          "label": "Grid prev",
+          "action": { "type": "keys", "keys": ["shift", "n"] }
         }
       },
       "encoders": {
         "E1": {
-          "label": "Zoom",
-          "cw": {
-            "type": "keys",
-            "keys": [
-              "+"
-            ]
-          },
-          "ccw": {
-            "type": "keys",
-            "keys": [
-              "-"
-            ]
-          },
-          "press": {
-            "type": "keys",
-            "keys": [
-              "home"
-            ]
-          }
+          "label": "Layer",
+          "ccw": { "type": "keys", "keys": ["-"] },
+          "cw": { "type": "keys", "keys": ["+"] },
+          "press": { "type": "keys", "keys": ["v"] }
         },
         "E2": {
-          "label": "Pan",
-          "cw": {
-            "type": "keys",
-            "keys": [
-              "right"
-            ]
-          },
-          "ccw": {
-            "type": "keys",
-            "keys": [
-              "left"
-            ]
-          }
+          "label": "Opacity",
+          "ccw": { "type": "keys", "keys": ["shift", "["] },
+          "cw": { "type": "keys", "keys": ["shift", "]"] },
+          "press": { "type": "keys", "keys": ["h"] }
         }
       }
     },
     {
-      "name": "PCB",
+      "name": "Differential Pair",
       "keys": {
         "K01": {
-          "label": "Undo",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "ctrl",
-              "z"
-            ]
-          }
+          "label": "Add diff pair",
+          "action": { "type": "keys", "keys": ["6"] }
         },
         "K02": {
-          "label": "Redo",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "ctrl",
-              "y"
-            ]
-          }
+          "label": "Edit width",
+          "action": { "type": "keys", "keys": ["w"] }
         },
         "K03": {
-          "label": "Track",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "x"
-            ]
-          }
+          "label": "Run DRC",
+          "action": { "type": "keys", "keys": ["d"] }
         },
         "K04": {
-          "label": "Via",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "v"
-            ]
-          }
+          "label": "Cancel",
+          "action": { "type": "keys", "keys": ["escape"] }
         },
         "K05": {
-          "label": "Move",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "m"
-            ]
-          }
+          "label": "Delete",
+          "action": { "type": "keys", "keys": ["delete"] }
         },
         "K06": {
-          "label": "Rotate",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "r"
-            ]
-          }
+          "label": "Diff gap",
+          "action": { "type": "keys", "keys": ["9"] }
         },
         "K07": {
-          "label": "Delete",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "delete"
-            ]
-          }
+          "label": "Tune length",
+          "action": { "type": "keys", "keys": ["7"] }
         },
         "K08": {
-          "label": "DRC",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "ctrl",
-              "shift",
-              "d"
-            ]
-          }
+          "label": "Add via",
+          "action": { "type": "keys", "keys": ["v"] }
         },
         "K09": {
-          "label": "Save",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "ctrl",
-              "s"
-            ]
-          }
+          "label": "Hide ratsnest",
+          "action": { "type": "keys", "keys": ["u"] }
         },
         "K10": {
-          "label": "Zoom fit",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "home"
-            ]
-          }
-        },
-        "K11": {
-          "label": "Zoom in",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "+"
-            ]
-          }
-        },
-        "K12": {
-          "label": "Zoom out",
-          "action": {
-            "type": "keys",
-            "keys": [
-              "-"
-            ]
-          }
+          "label": "Grid prev",
+          "action": { "type": "keys", "keys": ["shift", "n"] }
         }
       },
       "encoders": {
         "E1": {
-          "label": "Zoom",
-          "cw": {
-            "type": "keys",
-            "keys": [
-              "+"
-            ]
-          },
-          "ccw": {
-            "type": "keys",
-            "keys": [
-              "-"
-            ]
-          },
-          "press": {
-            "type": "keys",
-            "keys": [
-              "home"
-            ]
-          }
+          "label": "Layer",
+          "ccw": { "type": "keys", "keys": ["-"] },
+          "cw": { "type": "keys", "keys": ["+"] },
+          "press": { "type": "keys", "keys": ["v"] }
         },
         "E2": {
-          "label": "Grid",
-          "cw": {
-            "type": "keys",
-            "keys": [
-              "ctrl",
-              "shift",
-              "+"
-            ]
-          },
-          "ccw": {
-            "type": "keys",
-            "keys": [
-              "ctrl",
-              "shift",
-              "-"
-            ]
-          }
+          "label": "Opacity",
+          "ccw": { "type": "keys", "keys": ["shift", "["] },
+          "cw": { "type": "keys", "keys": ["shift", "]"] },
+          "press": { "type": "keys", "keys": ["h"] }
         }
       }
     },
     {
-      "name": "L3"
+      "name": "Reserved",
+      "keys": {
+        "K01": {
+          "label": "Add track",
+          "action": { "type": "keys", "keys": ["x"] }
+        },
+        "K02": {
+          "label": "Edit width",
+          "action": { "type": "keys", "keys": ["w"] }
+        },
+        "K03": {
+          "label": "Run DRC",
+          "action": { "type": "keys", "keys": ["d"] }
+        },
+        "K04": {
+          "label": "Cancel",
+          "action": { "type": "keys", "keys": ["escape"] }
+        },
+        "K05": {
+          "label": "Delete",
+          "action": { "type": "keys", "keys": ["delete"] }
+        },
+        "K06": {
+          "label": "Next width",
+          "action": { "type": "keys", "keys": ["n"] }
+        },
+        "K07": {
+          "label": "Track width -",
+          "action": { "type": "keys", "keys": ["shift", "w"] }
+        },
+        "K08": {
+          "label": "Add via",
+          "action": { "type": "keys", "keys": ["v"] }
+        },
+        "K09": {
+          "label": "Hide ratsnest",
+          "action": { "type": "keys", "keys": ["u"] }
+        },
+        "K10": {
+          "label": "Grid prev",
+          "action": { "type": "keys", "keys": ["shift", "n"] }
+        }
+      },
+      "encoders": {
+        "E1": {
+          "label": "Layer",
+          "ccw": { "type": "keys", "keys": ["-"] },
+          "cw": { "type": "keys", "keys": ["+"] },
+          "press": { "type": "keys", "keys": ["v"] }
+        },
+        "E2": {
+          "label": "Opacity",
+          "ccw": { "type": "keys", "keys": ["shift", "["] },
+          "cw": { "type": "keys", "keys": ["shift", "]"] },
+          "press": { "type": "keys", "keys": ["h"] }
+        }
+      }
     }
-  ],
-  "name": "KiCad Schematic"
+  ]
 }
