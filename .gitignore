@@ -12,3 +12,5 @@ build/
 .vscode/
 *.log
 profiles/local/
+profiles/_state.json
+firmware_out/

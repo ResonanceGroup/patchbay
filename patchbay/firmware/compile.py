@@ -42,16 +42,32 @@ MODEL = "ch57x-2"
 ROWS, COLS, KNOBS = 3, 4, 2
 
 # --- surrogate allocation (daemon mode) -------------------------------------
-# 12 keys -> F13..F24. Two encoders -> F1..F6 (press/cw/ccw).
-# K11/K12 are reserved as software layer switches (see daemon config).
-KEY_SURROGATES: dict[str, str] = {
-    kid: f"f{13 + i}" for i, kid in enumerate(KEY_IDS)
+# Fixed, profile-independent. Every control on every hardware layer gets its
+# own key code, so the daemon knows exactly which control on which layer was
+# used: the pad's side button cycles the hardware layer and the daemon reads
+# the layer straight off the code. No modifiers (those stay free for real
+# chords), no reserved buttons.
+#
+# Codes: layer-1 buttons use F13..F24, layer-2 buttons use F1..F12, layer-3
+# buttons use other rarely-used keys (numpad operators, media, nav). The knobs
+# are identical on every layer, so each carries one global code. The daemon
+# grabs the pad, so none of these codes reach the OS while it is running.
+_BUTTON_NAMES: dict[int, list[str]] = {
+    0: [f"f{13 + i}" for i in range(12)],   # layer 1 buttons
+    1: [f"f{1 + i}" for i in range(12)],    # layer 2 buttons
+    2: ["numpadslash", "numpadasterisk", "numpadminus", "numpadplus",
+        "numpadenter", "numpadequal", "numpaddot", "printscreen",
+        "application", "numlock", "play", "next"],  # layer 3 buttons
 }
-LAYER_DOWN_KEY = "K11"   # surrogate f23
-LAYER_UP_KEY = "K12"     # surrogate f24
+# hardware layer -> (key_id -> surrogate name)
+KEY_SURROGATES: dict[int, dict[str, str]] = {
+    layer: {kid: names[i] for i, kid in enumerate(KEY_IDS)}
+    for layer, names in _BUTTON_NAMES.items()
+}
+# Knobs are global (same action on every layer): one code per gesture.
 ENCODER_SURROGATES: dict[str, dict[str, str]] = {
-    "E1": {"press": "f1", "cw": "f2", "ccw": "f3"},
-    "E2": {"press": "f4", "cw": "f5", "ccw": "f6"},
+    "E1": {"press": "prev", "cw": "stop", "ccw": "mute"},
+    "E2": {"press": "calculator", "cw": "favorites", "ccw": "insert"},
 }
 
 # --- action-string compiler (direct mode) -----------------------------------
@@ -138,29 +154,29 @@ def _grid_from_keys(keys: dict[str, str]) -> list[list[str]]:
 
 
 def build_surrogate_config() -> dict[str, Any]:
-    """Fixed firmware config: controls -> surrogate keys.
-
-    All three hardware layers carry the same surrogates so the side button is
-    inert; the daemon owns layer state in software."""
-    keys = dict(KEY_SURROGATES)
-    layer = {
-        "buttons": _grid_from_keys(keys),
-        "knobs": [
+    """Fixed firmware config: every control on every hardware layer -> its own
+    surrogate code. The side button cycles the hardware layer; the daemon reads
+    the layer off the code. The firmware stays profile-independent — it only
+    reports "control X on layer N was used"."""
+    layers = []
+    for layer in range(LAYER_COUNT):
+        keys = {kid: KEY_SURROGATES[layer][kid] for kid in KEY_IDS}
+        knobs = [
             {"ccw": ENCODER_SURROGATES["E1"]["ccw"],
              "press": ENCODER_SURROGATES["E1"]["press"],
              "cw": ENCODER_SURROGATES["E1"]["cw"]},
             {"ccw": ENCODER_SURROGATES["E2"]["ccw"],
              "press": ENCODER_SURROGATES["E2"]["press"],
              "cw": ENCODER_SURROGATES["E2"]["cw"]},
-        ],
-    }
+        ]
+        layers.append({"buttons": _grid_from_keys(keys), "knobs": knobs})
     return {
         "model": MODEL,
         "orientation": "normal",
         "rows": ROWS,
         "columns": COLS,
         "knobs": KNOBS,
-        "layers": [layer for _ in range(LAYER_COUNT)],
+        "layers": layers,
     }
 
 

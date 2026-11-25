@@ -1,14 +1,15 @@
 """Daemon engine: resolve a decoded pad control into an action.
 
-State: the current software layer (0..2) and the active profile (follows the
-focused window, or a pinned profile). On each press we look up the binding for
-that control on the active profile's current layer.
+State: the current layer (read from the surrogate code the pad emits — the
+side button cycles it) and the active profile (follows the focused window, or a
+pinned profile). On each press we look up the binding for that control on the
+active profile's current layer.
 """
 from __future__ import annotations
 
 from pathlib import Path
 
-from ..core.profile import load_profiles, Profile, LAYER_COUNT
+from ..core.profile import load_profiles, Profile
 from ..core import window_rules
 
 
@@ -42,9 +43,6 @@ class Engine:
                     break
             else:
                 self.pinned = None
-
-    def cycle_layer(self, delta: int):
-        self.layer = (self.layer + delta) % LAYER_COUNT
 
     def active_profile(self) -> Profile | None:
         if self.pinned:

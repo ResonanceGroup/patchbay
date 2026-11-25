@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Patchbay
+GenericName=Macro keypad
+Comment=Macro keypad daemon and tray icon
+Exec=/usr/bin/python3 /home/jason/src/patchbay/patchbay/app.py --pin KiCad
+Icon=/home/jason/src/patchbay/patchbay/assets/patchbay.svg
+Terminal=false
+Categories=Utility;
+X-GNOME-Autostart-enabled=true
