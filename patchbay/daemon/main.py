@@ -29,12 +29,19 @@ def handle(ev, engine: Engine, injector: Injector) -> None:
     """Decode one surrogate event and inject the mapped action."""
     if ev.type != ecodes.EV_KEY or ev.value == 0:
         return
-    if ev.code == LAYER_DOWN_ECODE:
-        engine.cycle_layer(-1)
-        print(f"layer -> {engine.layer + 1}")
-        return
-    if ev.code == LAYER_UP_ECODE:
-        engine.cycle_layer(+1)
+    if ev.code in (LAYER_DOWN_ECODE, LAYER_UP_ECODE):
+        # These two surrogate slots double as layer switches, but only when the
+        # active profile leaves them unbound. If the profile assigns them a real
+        # action (e.g. a diagram that uses all 12 buttons), the action wins.
+        kid = DECODE[ev.code][1]
+        action = engine.action_for_key(kid)
+        if action is not None:
+            prof = engine.active_profile()
+            pname = prof.name if prof else "(no profile)"
+            print(f"[{pname} L{engine.layer + 1}] {kid} -> {action.summary()}")
+            injector.execute(action)
+            return
+        engine.cycle_layer(-1 if ev.code == LAYER_DOWN_ECODE else +1)
         print(f"layer -> {engine.layer + 1}")
         return
     target = DECODE.get(ev.code)
