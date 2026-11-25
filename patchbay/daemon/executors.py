@@ -91,6 +91,16 @@ def resolve_key(name: str) -> int | None:
     return getattr(ecodes, f"KEY_{n.upper()}", None)
 
 
+def holdable_modifier(action: Any) -> int | None:
+    """A key action that is a *single* modifier (e.g. ["shift"], ["ctrl"]) is
+    held while the pad key is down and released when it comes up, so it can
+    modify mouse moves and other keys (KiCad hold-Shift). Multi-key chords stay
+    momentary taps. Returns the modifier ecode, or None."""
+    if isinstance(action, KeysAction) and len(action.keys) == 1:
+        return MOD_KEYS.get(action.keys[0].lower())
+    return None
+
+
 class Injector:
     """Owns one virtual keyboard and injects actions onto it."""
 
@@ -99,6 +109,8 @@ class Injector:
             list(range(0, 0x2FF))  # broad: standard + consumer keys
         ))
         self.ui = UInput({ecodes.EV_KEY: keys}, name="patchbay")
+        # surrogate pad code -> modifier ecode currently held down
+        self._held: dict[int, int] = {}
 
     def close(self):
         self.ui.close()
@@ -123,6 +135,35 @@ class Injector:
         for c in reversed(codes):
             self.ui.write(ecodes.EV_KEY, c, 0)
         self.ui.syn()
+
+    # ---- held modifiers (single-modifier key actions) ----
+    def _release_code(self, ecode: int):
+        self.ui.write(ecodes.EV_KEY, ecode, 0)
+        self.ui.syn()
+
+    def toggle_hold(self, surrogate: int, mod: int):
+        """Press-and-hold the modifier. If it is already held for this pad key,
+        release it instead — so a second press always clears it even if the pad
+        never sends a key-up, guarding against a stuck modifier."""
+        if surrogate in self._held:
+            self._release_code(self._held.pop(surrogate))
+        else:
+            self.ui.write(ecodes.EV_KEY, mod, 1)
+            self.ui.syn()
+            self._held[surrogate] = mod
+
+    def release_hold(self, surrogate: int):
+        c = self._held.pop(surrogate, None)
+        if c is not None:
+            self._release_code(c)
+
+    def is_held(self, surrogate: int) -> bool:
+        return surrogate in self._held
+
+    def release_all(self):
+        for c in list(self._held.values()):
+            self._release_code(c)
+        self._held.clear()
 
     def tap_media(self, key: str):
         self._tap(MEDIA_KEYS.get(key, ecodes.KEY_PLAYPAUSE))

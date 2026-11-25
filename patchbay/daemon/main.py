@@ -20,7 +20,7 @@ from evdev import ecodes
 
 from .surrogates import DECODE
 from .engine import Engine
-from .executors import Injector
+from .executors import Injector, holdable_modifier
 from .discovery import find_pads, scan
 from ..core.device_config import PadConfig
 from ..core.profile import load_profiles
@@ -32,7 +32,7 @@ def handle(ev, engine: Engine, injector: Injector) -> None:
     Each surrogate code already encodes the control AND the hardware layer (the
     pad's side button cycles the layer), so the layer is read off the code —
     no modifier tracking, no reserved buttons, no software layer cycling."""
-    if ev.type != ecodes.EV_KEY or ev.value == 0:
+    if ev.type != ecodes.EV_KEY:
         return
     target = DECODE.get(ev.code)
     if not target:
@@ -48,6 +48,26 @@ def handle(ev, engine: Engine, injector: Injector) -> None:
         label = f"{eid}/{gesture}"
     prof = engine.active_profile()
     pname = prof.name if prof else "(no profile)"
+
+    # A single-modifier key (Shift / Ctrl) is held while the pad key is down and
+    # released when it comes up, so it can modify mouse moves and other keys.
+    if target[0] == "key":
+        mod = holdable_modifier(action)
+        if mod is not None:
+            if ev.value == 1:
+                injector.toggle_hold(ev.code, mod)
+                state = "hold" if injector.is_held(ev.code) else "release"
+                print(f"[{pname} L{engine.layer + 1}] {label} -> {state} "
+                      f"{action.summary()}")
+            elif ev.value == 0:
+                if injector.is_held(ev.code):
+                    injector.release_hold(ev.code)
+                    print(f"[{pname} L{engine.layer + 1}] {label} -> release "
+                          f"{action.summary()}")
+            return
+
+    if ev.value == 0:
+        return
     if action is not None:
         print(f"[{pname} L{engine.layer + 1}] {label} -> {action.summary()}")
         injector.execute(action)
@@ -141,6 +161,7 @@ class Daemon:
                     print("pad disconnected; re-scanning...", file=sys.stderr)
                     self._stop.wait(0.5)
                 finally:
+                    injector.release_all()
                     sel.close()
                     for d in grabbed:
                         try:
@@ -148,6 +169,7 @@ class Daemon:
                         except Exception:
                             pass
         finally:
+            injector.release_all()
             injector.close()
 
 

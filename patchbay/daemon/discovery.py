@@ -61,7 +61,7 @@ def classify(dev: InputDevice) -> Candidate:
 
 def matches(c: Candidate, cfg: PadConfig) -> bool:
     if c.transport == USB:
-        return c.vid == cfg.usb_vid and c.pid == c.pid
+        return c.vid == cfg.usb_vid and c.pid == cfg.usb_pid
     if c.transport == BT:
         if cfg.bt_mac and c.mac:
             return c.mac == cfg.bt_mac.upper()

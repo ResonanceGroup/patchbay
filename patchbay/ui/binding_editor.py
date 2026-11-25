@@ -571,17 +571,6 @@ class BindingEditor(QFrame):
             i = stack.media_combo.findData(action.key)
             stack.media_combo.setCurrentIndex(max(0, i))
 
-        self.grid.add_property(cat, prefix + "Type", combo,
-                               "What this control does")
-        vitem = self.grid.add_property(cat, prefix + VALUE_NAME[TYPE_NAMES[idx][0]],
-                                       stack, VALUE_DESC[TYPE_NAMES[idx][0]])
-
-        def on_type(i):
-            stack.setCurrentIndex(i)
-            vitem.setText(0, prefix + VALUE_NAME[TYPE_NAMES[i][0]])
-            vitem.setData(0, Qt.UserRole + 2, VALUE_DESC[TYPE_NAMES[i][0]])
-            _commit()
-
         def on_chord(chord):
             setv(KeysAction(keys=chord))
             stack.chords.setText(" + ".join(chord))
@@ -598,33 +587,69 @@ class BindingEditor(QFrame):
                 setv(NoneAction())
             self.binding_changed.emit()
 
-        combo.currentIndexChanged.connect(on_type)
         stack.chord_captured.connect(on_chord)
         stack.text_edit.textEdited.connect(lambda _: _commit())
         stack.media_combo.currentIndexChanged.connect(
             lambda _: _commit() if combo.currentIndex() == 2 else None)
 
+        # Two rows: the Type combo and the value control. Each is added to the
+        # grid exactly once (via add_type/add_value) — reordering rows after the
+        # fact would need setItemWidget re-install, which segfaults in Qt6.
+        def add_type():
+            return self.grid.add_property(cat, prefix + "Type", combo,
+                                          "What this control does")
+
+        def add_value():
+            vitem = self.grid.add_property(
+                cat, prefix + VALUE_NAME[TYPE_NAMES[idx][0]], stack,
+                VALUE_DESC[TYPE_NAMES[idx][0]])
+
+            def on_type(i):
+                stack.setCurrentIndex(i)
+                vitem.setText(0, prefix + VALUE_NAME[TYPE_NAMES[i][0]])
+                vitem.setData(0, Qt.UserRole + 2, VALUE_DESC[TYPE_NAMES[i][0]])
+                _commit()
+            combo.currentIndexChanged.connect(on_type)
+            return vitem
+
+        return (prefix + "Type", add_type,
+                prefix + VALUE_NAME[TYPE_NAMES[idx][0]], add_value)
+
     def _build(self):
         """Populate the grid for the current binding (used by both modes)."""
         b = self._binding_ref
         enc = self.kind == "encoder"
+        # Flat (A→Z) mode collects (sort_name, add_fn) and adds them in
+        # alphabetical order, so each row + its value widget is installed once.
+        specs: list[tuple[str, object]] = []
 
         def gen_label(cat):
-            self.label_edit = QLineEdit(b.label)
-            self.label_edit.setMinimumHeight(26)
-            self.label_edit.setPlaceholderText("shown on the key")
-            self.label_edit.textEdited.connect(
-                lambda _: self.binding_changed.emit())
-            self.grid.add_property(cat, "Label", self.label_edit,
-                                   "Text shown on the control")
+            def add():
+                self.label_edit = QLineEdit(b.label)
+                self.label_edit.setMinimumHeight(26)
+                self.label_edit.setPlaceholderText("shown on the key")
+                self.label_edit.textEdited.connect(
+                    lambda _: self.binding_changed.emit())
+                self.grid.add_property(cat, "Label", self.label_edit,
+                                       "Text shown on the control")
+            if cat is not None:
+                add()
+            else:
+                specs.append(("Label", add))
 
         def gen_action(cat, attr, sec, prefix=""):
             act = getattr(b, attr) if enc else b.action
-            self._add_action(cat, act,
-                             lambda a, at=attr: (
-                                 setattr(b, at, a) if enc
-                                 else setattr(b, "action", a))
-                             or self.binding_changed.emit(), prefix)
+            setv = (lambda a, at=attr: (
+                setattr(b, at, a) if enc else setattr(b, "action", a))
+                or self.binding_changed.emit())
+            tname, add_type, vname, add_value = self._add_action(
+                cat, act, setv, prefix)
+            if cat is not None:
+                add_type()
+                add_value()
+            else:
+                specs.append((tname, add_type))
+                specs.append((vname, add_value))
 
         if enc:
             if self.categorized:
@@ -638,7 +663,8 @@ class BindingEditor(QFrame):
                                        ("ccw", "Turn left", "Left "),
                                        ("press", "Press", "Press ")):
                     gen_action(None, attr, sec, pre)
-                self._sort_flat()
+                for _, add in sorted(specs, key=lambda p: p[0]):
+                    add()
         else:
             if self.categorized:
                 gen_label(self.grid.add_category("General"))
@@ -646,23 +672,8 @@ class BindingEditor(QFrame):
             else:
                 gen_label(None)
                 gen_action(None, "action", "Action")
-                self._sort_flat()
-
-    def _sort_flat(self):
-        # Reorder top-level rows alphabetically. takeTopLevelItem removes
-        # WITHOUT deleting (clear() would destroy the items + their widgets).
-        # But removing an item detaches its column-1 setItemWidget control, so
-        # capture each widget first and re-apply it after re-adding — otherwise
-        # the alphabetical view shows only the row names, no value controls.
-        n = self.grid.topLevelItemCount()
-        rows = [(self.grid.topLevelItem(i).text(0),
-                 self.grid.itemWidget(self.grid.topLevelItem(i), 1))
-                for i in range(n)]
-        items = [self.grid.takeTopLevelItem(0) for _ in range(n)]
-        for (name, w), it in sorted(zip(rows, items), key=lambda p: p[0][0]):
-            self.grid.addTopLevelItem(it)
-            if w is not None:
-                self.grid.setItemWidget(it, 1, w)
+                for _, add in sorted(specs, key=lambda p: p[0]):
+                    add()
 
     def _rebuild(self):
         b = self._binding_ref
