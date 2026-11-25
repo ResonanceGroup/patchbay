@@ -13,14 +13,46 @@ import sys
 import time
 from pathlib import Path
 
+import selectors
+
 from evdev import ecodes
 
 from .surrogates import DECODE, LAYER_DOWN_ECODE, LAYER_UP_ECODE
 from .engine import Engine
 from .executors import Injector
-from .discovery import find_pad, scan
+from .discovery import find_pads, scan
 from ..core.device_config import PadConfig
 from ..core.profile import load_profiles
+
+
+def handle(ev, engine: Engine, injector: Injector) -> None:
+    """Decode one surrogate event and inject the mapped action."""
+    if ev.type != ecodes.EV_KEY or ev.value == 0:
+        return
+    if ev.code == LAYER_DOWN_ECODE:
+        engine.cycle_layer(-1)
+        print(f"layer -> {engine.layer + 1}")
+        return
+    if ev.code == LAYER_UP_ECODE:
+        engine.cycle_layer(+1)
+        print(f"layer -> {engine.layer + 1}")
+        return
+    target = DECODE.get(ev.code)
+    if not target:
+        return
+    if target[0] == "key":
+        action = engine.action_for_key(target[1])
+    else:
+        action = engine.action_for_encoder(target[1], target[2])
+    prof = engine.active_profile()
+    pname = prof.name if prof else "(no profile)"
+    if action is not None:
+        print(f"[{pname} L{engine.layer + 1}] "
+              f"{'/'.join(target[1:])} -> {action.summary()}")
+        injector.execute(action)
+    else:
+        print(f"[{pname} L{engine.layer + 1}] "
+              f"{'/'.join(target[1:])} -> (unbound)")
 
 
 def detect() -> int:
@@ -52,49 +84,40 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         while True:
-            dev = find_pad(cfg)
-            if dev is None:
+            devs = find_pads(cfg)
+            if not devs:
                 print("pad not connected (USB or Bluetooth); waiting...",
                       file=sys.stderr)
                 time.sleep(1.0)
                 continue
-            print(f"connected: {dev.path} ({dev.name})")
+            print("connected: " + ", ".join(
+                f"{d.path} ({d.name})" for d in devs))
+            sel = selectors.DefaultSelector()
+            grabbed: list = []
             try:
-                dev.grab()
-                for ev in dev.read_loop():
-                    if ev.type != ecodes.EV_KEY or ev.value == 0:
-                        continue
-                    if ev.code == LAYER_DOWN_ECODE:
-                        engine.cycle_layer(-1)
-                        print(f"layer -> {engine.layer + 1}")
-                        continue
-                    if ev.code == LAYER_UP_ECODE:
-                        engine.cycle_layer(+1)
-                        print(f"layer -> {engine.layer + 1}")
-                        continue
-                    target = DECODE.get(ev.code)
-                    if not target:
-                        continue
-                    if target[0] == "key":
-                        action = engine.action_for_key(target[1])
-                    else:
-                        action = engine.action_for_encoder(target[1], target[2])
-                    prof = engine.active_profile()
-                    pname = prof.name if prof else "(no profile)"
-                    if action is not None:
-                        print(f"[{pname} L{engine.layer+1}] "
-                              f"{'/'.join(target[1:])} -> {action.summary()}")
-                        injector.execute(action)
-                    else:
-                        print(f"[{pname} L{engine.layer+1}] "
-                              f"{'/'.join(target[1:])} -> (unbound)")
+                for d in devs:
+                    try:
+                        d.grab()
+                        grabbed.append(d)
+                        sel.register(d.fd, selectors.EVENT_READ, d)
+                    except OSError as e:
+                        print(f"grab failed on {d.path}: {e}",
+                              file=sys.stderr)
+                while True:
+                    for key, _ in sel.select():
+                        dev = key.data
+                        for ev in dev.read():
+                            handle(ev, engine, injector)
             except (OSError, IOError):
                 print("pad disconnected; re-scanning...", file=sys.stderr)
-                try:
-                    dev.ungrab()
-                except Exception:
-                    pass
                 time.sleep(0.5)
+            finally:
+                sel.close()
+                for d in grabbed:
+                    try:
+                        d.ungrab()
+                    except Exception:
+                        pass
     except KeyboardInterrupt:
         pass
     finally:

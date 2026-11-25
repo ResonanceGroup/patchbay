@@ -80,32 +80,23 @@ def scan(cfg: PadConfig | None = None) -> list[Candidate]:
     return out
 
 
-def _best_interface(cands: list[Candidate]):
-    """Pick the interface that actually emits our surrogate keys.
+def find_pads(cfg: PadConfig) -> list[InputDevice]:
+    """All interfaces of the pad, USB preferred over Bluetooth.
 
-    The pad exposes several HID interfaces (keyboard / keyboard / mouse). Only
-    one carries the F13-F24 surrogates, so score each by how many surrogate
-    codes it advertises and grab that one.
+    The pad exposes several HID interfaces (keyboard / keyboard / mouse) and
+    the surrogate F-keys are not reliably emitted on the interface that
+    advertises them. So we grab every interface of the chosen transport and
+    read from all of them; the decoder ignores anything that isn't a surrogate.
     """
-    from .surrogates import DECODE
-    surrogate_codes = set(DECODE.keys())
-    best, best_score = None, -1
-    for c in cands:
-        try:
-            keys = set(InputDevice(c.path).capabilities().get(ecodes.EV_KEY, []))
-            score = len(keys & surrogate_codes)
-        except OSError:
-            score = -1
-        if score > best_score:
-            best, best_score = c, score
-    return best
-
-
-def find_pad(cfg: PadConfig) -> InputDevice | None:
-    """Best pad device: USB preferred over Bluetooth when both present."""
     matched = [c for c in scan(cfg) if matches(c, cfg)]
     for transport in (USB, BT):
-        best = _best_interface([c for c in matched if c.transport == transport])
-        if best is not None:
-            return InputDevice(best.path)
-    return None
+        group = [c for c in matched if c.transport == transport]
+        if group:
+            devs = []
+            for c in group:
+                try:
+                    devs.append(InputDevice(c.path))
+                except OSError:
+                    continue
+            return devs
+    return []
