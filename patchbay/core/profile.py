@@ -175,9 +175,61 @@ def load_profile(path: Path) -> Profile:
 
 def load_profiles(directory: Path) -> list[Profile]:
     return sorted(
-        (load_profile(p) for p in directory.glob("*.json")),
+        (load_profile(p) for p in directory.glob("*.json")
+         if p.name != "_state.json"),
         key=lambda pr: (pr.app != "General", pr.app.lower()),
     )
+
+
+def slug(name: str) -> str:
+    """Filesystem-safe profile filename stem from a display name."""
+    return "".join(c if c.isalnum() else "-" for c in name.lower()).strip("-")
+
+
+def create_app(directory: Path, app: str, name: str | None = None) -> Profile:
+    """Create a new application with a single starter profile (named after the
+    app) and empty layers. Raises FileExistsError if the app already exists."""
+    app = app.strip()
+    if not app:
+        raise ValueError("application name is empty")
+    if any(pr.app == app for pr in load_profiles(directory)):
+        raise FileExistsError(app)
+    p = Profile(app=app, name=(name or app).strip(), match={})
+    p.save(directory / f"{slug(p.name)}.json")
+    return p
+
+
+def rename_app(directory: Path, profiles: list[Profile],
+               old_app: str, new_app: str) -> None:
+    """Rename an application across all its profiles. A profile whose name
+    equals the old app (the default starter name) is renamed too and its file
+    follows; profiles with their own names keep them and just change app."""
+    new_app = new_app.strip()
+    if not new_app or new_app == old_app:
+        return
+    if any(pr.app == new_app for pr in profiles):
+        raise FileExistsError(new_app)
+    for pr in profiles:
+        if pr.app != old_app:
+            continue
+        pr.app = new_app
+        if pr.name == old_app:
+            old_path = pr.path
+            pr.name = new_app
+            new_path = directory / f"{slug(new_app)}.json"
+            pr.save(new_path)
+            if old_path and old_path != new_path:
+                old_path.unlink(missing_ok=True)
+        else:
+            pr.save()
+
+
+def delete_app(directory: Path, profiles: list[Profile], app: str) -> None:
+    """Delete every profile belonging to an application (and its file)."""
+    for pr in profiles:
+        if pr.app == app and pr.path:
+            pr.path.unlink(missing_ok=True)
+
 
 
 def app_groups(profiles: list[Profile]) -> list[str]:

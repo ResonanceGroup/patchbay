@@ -5,9 +5,10 @@ from __future__ import annotations
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QCheckBox, QDialog, QFrame, QHBoxLayout,
                                QInputDialog, QLabel, QLineEdit,
-                               QListWidget, QListWidgetItem, QPushButton,
-                               QVBoxLayout, QWidget)
+                               QListWidget, QListWidgetItem, QMessageBox,
+                               QPushButton, QVBoxLayout, QWidget)
 
+from ..core.profile import (app_groups, create_app, delete_app, rename_app)
 from ..core.window_rules import list_windows
 
 
@@ -64,6 +65,50 @@ class SettingsDialog(QDialog):
         bl.addLayout(prow)
         lay.addWidget(box)
 
+        # ---- applications CRUD ----
+        abox = QFrame()
+        abox.setObjectName("panel")
+        al = QVBoxLayout(abox)
+        al.setSpacing(6)
+
+        ahead = QHBoxLayout()
+        atitle = QLabel("Applications")
+        atitle.setStyleSheet("font-weight: 700; font-size: 14px;")
+        ahead.addWidget(atitle)
+        ahead.addStretch(1)
+        al.addLayout(ahead)
+
+        self.app_list = QListWidget()
+        self.app_list.setStyleSheet(
+            "QListWidget { background: #252526; border: 1px solid #3f3f46;"
+            " border-radius: 2px; outline: 0; }"
+            "QListWidget::item { padding: 4px 6px; }"
+            "QListWidget::item:selected { background: #007acc; color: #fff; }")
+        self.app_list.setMaximumHeight(140)
+        al.addWidget(self.app_list, 1)
+
+        arow = QHBoxLayout()
+        arow.setSpacing(6)
+        self.add_app_btn = QPushButton("Add")
+        self.add_app_btn.clicked.connect(self._add_app)
+        arow.addWidget(self.add_app_btn)
+        self.rename_app_btn = QPushButton("Rename")
+        self.rename_app_btn.clicked.connect(self._rename_app)
+        arow.addWidget(self.rename_app_btn)
+        self.delete_app_btn = QPushButton("Delete")
+        self.delete_app_btn.clicked.connect(self._delete_app)
+        arow.addWidget(self.delete_app_btn)
+        arow.addStretch(1)
+        al.addLayout(arow)
+        lay.addWidget(abox)
+
+        ahint = QLabel("An application groups one or more profiles. Add one to "
+                       "start mapping a new program; Rename and Delete apply to "
+                       "every profile under it.")
+        ahint.setObjectName("faint")
+        ahint.setWordWrap(True)
+        lay.addWidget(ahint)
+
         hint = QLabel("Rules are built by picking real windows. Title words "
                       "are plain words that must all appear in the window "
                       "title.")
@@ -79,6 +124,7 @@ class SettingsDialog(QDialog):
         lay.addLayout(row)
 
         self._show_rules()
+        self._refresh_apps()
 
     # ------------------------------------------------------------------
     def _auto_toggled(self, on):
@@ -121,7 +167,84 @@ class SettingsDialog(QDialog):
         pr.match["title"] = words[:2]
         pr.save()
         self._show_rules()
-        self.win.reload_profiles(select=pr.name)
+
+    # ------------------------------------------------------------------
+    # applications CRUD
+    def _refresh_apps(self, select: str | None = None):
+        self.app_list.blockSignals(True)
+        self.app_list.clear()
+        apps = app_groups(self.win.profiles)
+        sel = -1
+        for i, a in enumerate(apps):
+            self.app_list.addItem(a)
+            if select and a == select:
+                sel = i
+        if sel < 0 and self.win.profile:
+            cur = self.win.profile.app
+            for i, a in enumerate(apps):
+                if a == cur:
+                    sel = i
+                    break
+        if sel >= 0:
+            self.app_list.setCurrentRow(sel)
+        self.app_list.blockSignals(False)
+
+    def _selected_app(self) -> str | None:
+        it = self.app_list.currentItem()
+        return it.text() if it else None
+
+    def _add_app(self):
+        name, ok = QInputDialog.getText(
+            self, "New application", "Application name:")
+        if not ok or not name.strip():
+            return
+        try:
+            create_app(self.win.profiles_dir, name.strip())
+        except FileExistsError:
+            QMessageBox.warning(
+                self, "Exists",
+                f"An application named '{name.strip()}' already exists.")
+            return
+        self.win.reload_profiles(select=name.strip())
+        self._refresh_apps(select=name.strip())
+        self._show_rules()
+
+    def _rename_app(self):
+        old = self._selected_app()
+        if not old:
+            return
+        new, ok = QInputDialog.getText(
+            self, "Rename application", "New name:", text=old)
+        if not ok or not new.strip() or new.strip() == old:
+            return
+        try:
+            rename_app(self.win.profiles_dir, self.win.profiles, old, new.strip())
+        except FileExistsError:
+            QMessageBox.warning(
+                self, "Exists",
+                f"An application named '{new.strip()}' already exists.")
+            return
+        self.win.reload_profiles(select=new.strip())
+        self._refresh_apps(select=new.strip())
+        self._show_rules()
+
+    def _delete_app(self):
+        app = self._selected_app()
+        if not app:
+            return
+        if len(app_groups(self.win.profiles)) <= 1:
+            QMessageBox.information(
+                self, "Can't delete", "This is the only application.")
+            return
+        if QMessageBox.question(
+                self, "Delete application",
+                f"Delete '{app}' and all of its profiles?") \
+                != QMessageBox.Yes:
+            return
+        delete_app(self.win.profiles_dir, self.win.profiles, app)
+        self.win.reload_profiles()
+        self._refresh_apps()
+        self._show_rules()
 
     def _clear_title(self):
         pr = self.win.profile

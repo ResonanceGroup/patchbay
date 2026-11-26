@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QFrame,
                                QListWidget, QListWidgetItem, QMessageBox,
                                QPushButton, QVBoxLayout)
 
-from ..core.profile import Profile, app_groups
+from ..core.profile import Profile, app_groups, create_app, slug
 from ..core.window_rules import list_windows
 
 
@@ -41,6 +41,12 @@ class ProfilePanel(QFrame):
         self.app_combo.setMinimumWidth(140)
         self.app_combo.currentIndexChanged.connect(self._app_changed)
         arow.addWidget(self.app_combo, 1)
+        self.add_app = QPushButton("+")
+        self.add_app.setFixedSize(34, 30)
+        self.add_app.setStyleSheet("padding: 4px 0;")
+        self.add_app.setToolTip("Add application")
+        self.add_app.clicked.connect(self._add_app)
+        arow.addWidget(self.add_app)
         self.gear = QPushButton("⚙")
         self.gear.setFixedSize(34, 30)
         self.gear.setStyleSheet("padding: 4px 0; font-size: 15px;")
@@ -155,6 +161,20 @@ class ProfilePanel(QFrame):
         self.win.select_profile(pr, from_list=True)
 
     # ------------------------------------------------------------------
+    def _add_app(self):
+        name, ok = QInputDialog.getText(
+            self, "New application", "Application name:")
+        if not ok or not name.strip():
+            return
+        try:
+            create_app(self.win.profiles_dir, name.strip())
+        except FileExistsError:
+            QMessageBox.warning(
+                self, "Exists",
+                f"An application named '{name.strip()}' already exists.")
+            return
+        self.win.reload_profiles(select=name.strip())
+
     def _add(self):
         app = self.app_combo.currentText() or "General"
         name, ok = QInputDialog.getText(
@@ -163,7 +183,7 @@ class ProfilePanel(QFrame):
         if not ok or not name.strip():
             return
         p = Profile(app=app, name=name.strip(), match={})
-        p.save(self.win.profiles_dir / f"{_slug(name)}.json")
+        p.save(self.win.profiles_dir / f"{slug(name)}.json")
         self.win.reload_profiles(select=name.strip())
 
     def _duplicate(self):
@@ -179,7 +199,7 @@ class ProfilePanel(QFrame):
         p = copy.deepcopy(pr)
         p.name = name.strip()
         p.path = None
-        p.save(self.win.profiles_dir / f"{_slug(name)}.json")
+        p.save(self.win.profiles_dir / f"{slug(name)}.json")
         self.win.reload_profiles(select=name.strip())
 
     def _rename(self):
@@ -192,7 +212,7 @@ class ProfilePanel(QFrame):
             return
         old_path = pr.path
         pr.name = name.strip()
-        new_path = self.win.profiles_dir / f"{_slug(name)}.json"
+        new_path = self.win.profiles_dir / f"{slug(name)}.json"
         pr.save(new_path)
         if old_path and old_path != new_path:
             old_path.unlink(missing_ok=True)
@@ -217,7 +237,3 @@ class ProfilePanel(QFrame):
         from .settings_dialog import SettingsDialog
         dlg = SettingsDialog(self.win, parent=self)
         dlg.exec()
-
-
-def _slug(name: str) -> str:
-    return "".join(c if c.isalnum() else "-" for c in name.lower()).strip("-")
