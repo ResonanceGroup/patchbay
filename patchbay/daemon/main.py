@@ -21,7 +21,8 @@ from evdev import ecodes
 from .surrogates import DECODE
 from .engine import Engine
 from .executors import Injector, holdable_modifier
-from .discovery import find_pads, scan
+from .discovery import find_pads, find_usb_pads, scan
+from .hidraw import HidrawPad, find_pad_hidraw
 from ..core.device_config import PadConfig
 from ..core.profile import load_profiles
 
@@ -93,6 +94,22 @@ def _profiles_sig(d: Path) -> float:
         return 0.0
 
 
+def _acquire(cfg: PadConfig) -> tuple[list, str | None]:
+    """Pick the live pad source and its transport.
+
+    USB -> the pad's evdev interfaces (the kernel parses them into events).
+    Bluetooth -> the pad's raw-HID node, because the kernel's uhid layer leaves
+    the BT evdev devices empty. Each returned source exposes .fd, .read() ->
+    InputEvents, and grab()/ungrab(), so the read loop is transport-agnostic."""
+    usb = find_usb_pads(cfg)
+    if usb:
+        return usb, "usb"
+    path = find_pad_hidraw()
+    if path:
+        return [HidrawPad(path)], "bluetooth"
+    return [], None
+
+
 class Daemon:
     """The pad-reading loop, runnable in the main thread (CLI) or a background
     thread (tray app). `stop()` ends it cleanly; the read loop polls every 1s
@@ -127,13 +144,13 @@ class Daemon:
         self.engine, self.injector = engine, injector
         try:
             while not self._stop.is_set():
-                devs = find_pads(cfg)
+                devs, transport = _acquire(cfg)
                 if not devs:
                     print("pad not connected (USB or Bluetooth); waiting...",
                           file=sys.stderr)
                     self._stop.wait(1.0)
                     continue
-                print("connected: " + ", ".join(
+                print(f"connected ({transport}): " + ", ".join(
                     f"{d.path} ({d.name})" for d in devs))
                 sel = selectors.DefaultSelector()
                 grabbed: list = []

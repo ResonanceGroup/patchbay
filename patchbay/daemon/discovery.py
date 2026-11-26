@@ -100,3 +100,16 @@ def find_pads(cfg: PadConfig) -> list[InputDevice]:
                     continue
             return devs
     return []
+
+
+def find_usb_pads(cfg: PadConfig) -> list[InputDevice]:
+    """Only the pad's USB evdev interfaces.
+
+    Over Bluetooth the kernel's uhid layer creates evdev devices that advertise
+    no keys and emit no events, so the evdev path is useless there — Bluetooth
+    is served by the raw-HID (hidraw) transport instead. This returns just the
+    USB interfaces so the caller can fall back to hidraw for Bluetooth."""
+    return [InputDevice(c.path)
+            for c in scan(cfg)
+            if c.transport == USB and matches(c, cfg)]
+

@@ -1,0 +1,10 @@
+# Patchbay CH57x macro pad over Bluetooth.
+# The kernel's uhid layer leaves the pad's BT evdev devices empty, so the
+# patchbay daemon reads the pad's raw-HID (hidraw) reports instead. Grant the
+# input group read/write on the pad's keyboard/consumer hidraw node so the
+# daemon runs as a normal user (jason is in the input group) without root.
+#
+# Matches the pad's compound HID interface by its BT modalias
+# (bus 0005, vendor 07D7, product 0000). The pad's separate mouse interface
+# (000E:3412) is not needed by the daemon and is left untouched.
+SUBSYSTEM=="hidraw", ATTRS{modalias}=="hid:b0005g0001v000007D7p00000000", GROUP="input", MODE="0660"
